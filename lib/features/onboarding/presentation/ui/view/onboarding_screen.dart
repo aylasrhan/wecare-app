@@ -1,4 +1,94 @@
+
+// import 'package:flutter/material.dart';
+// import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+
+// class OnboardingPage extends StatefulWidget {
+//   @override
+//   _OnboardingPageState createState() => _OnboardingPageState();
+// }
+
+// class _OnboardingPageState extends State<OnboardingPage> {
+//   final PageController _controller = PageController();
+//   int _currentPage = 0;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.white,
+//       body: Stack(
+//         children: [
+//           PageView(
+//             controller: _controller,
+//             onPageChanged: (index) => setState(() => _currentPage = index),
+//             children: [
+//               _buildPage("assets/images/onboard11.png", "Welcome to WeCare", "Welcome to our medical app! We're excited to help you manage your healthcare from the comfort of your phone."),
+//               _buildPage("assets/images/doctor.png", "120+ Available Doctors", "Please provide us with your medical history including any allergies or current medications."),
+//               _buildPage("assets/images/doctor2.png", "Begin your medical care", "You can easily book appointments with your healthcare provider and view records."),
+//             ],
+//           ),
+
+//           Positioned(
+//             top: 50, left: 20, right: 20,
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Text("${_currentPage + 1}/3", style: TextStyle(fontSize: 16)),
+//                 TextButton(onPressed: () {}, child: Text("Skip", style: TextStyle(color: Colors.black))),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildPage(String image, String title, String description) {
+//     return Column(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: [
+//         // زيادة حجم الصورة إلى 320
+//         Image.asset(image, height: 400,fit: BoxFit.contain,),
+//         SizedBox(height: 30),
+        
+//         SmoothPageIndicator(
+//           controller: _controller, count: 3,
+//           effect: WormEffect(dotHeight: 10, dotWidth: 10, activeDotColor: Colors.blue),
+//         ),
+//         SizedBox(height: 30),
+        
+//         Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        
+//         Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+//           // تصغير حجم خط الوصف
+//           child: Text(description, 
+//             textAlign: TextAlign.center,
+//             style: TextStyle(fontSize: 14, color: Colors.grey[700]) 
+//           ),
+//         ),
+        
+//         Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+//           child: ElevatedButton(
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: Color(0xFF1E1E66),
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+//               minimumSize: Size(double.infinity, 50),
+//             ),
+//             onPressed: () => _controller.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease),
+//             child: Text("Next", style: TextStyle(color: Colors.white, fontSize: 16)),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
 import 'package:flutter/material.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:wecare/features/onboarding/presentation/ui/view/onboadring_contener/role_selection_page.dart';
+
+// تأكد من استيراد ملف صفحة اختيار الدور هنا
+// import 'role_selection_page.dart'; 
 
 class OnboardingPage extends StatefulWidget {
   @override
@@ -7,51 +97,99 @@ class OnboardingPage extends StatefulWidget {
 
 class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _controller = PageController();
+  int _currentPage = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _controller,
+      backgroundColor: Colors.white,
+      body: Stack(
         children: [
-          // تأكدي من وضع مسارات الصور الصحيحة هنا
-          _buildPage(
-            imagePath: "assets/images/onboard1.png", 
-            title: "Welcome to WeCare", 
-            description: "Welcome to our medical app! We're excited to help you manage your healthcare from the comfort of your phone."
+          PageView(
+            controller: _controller,
+            onPageChanged: (index) => setState(() => _currentPage = index),
+            children: [
+              _buildPage(
+                "assets/images/onboard11.png",
+                "Welcome to WeCare",
+                "Welcome to our medical app! We're excited to help you manage your healthcare from the comfort of your phone.",
+                () => _controller.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease),
+              ),
+              _buildPage(
+                "assets/images/doctor.png",
+                "120+ Available Doctors",
+                "Please provide us with your medical history including any allergies or current medications.",
+                () => _controller.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease),
+              ),
+              _buildPage(
+                "assets/images/doctor2.png",
+                "Begin your medical care",
+                "You can easily book appointments with your healthcare provider and view records.",
+                () {
+                  // الانتقال إلى صفحة اختيار الدور
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => RoleSelectionPage()),
+                  );
+                },
+              ),
+            ],
           ),
-          _buildPage(
-            imagePath: "assets/images/onboard4.png", 
-            title: "120+ Available Doctors", 
-            description: "Please provide us with your medical history including any allergies or current medications. This information will help us."
-          ),
-          _buildPage(
-            imagePath: "assets/images/onboard3.png", 
-            title: "Begin your medical care", 
-            description: "you can easily book appointments with your healthcare provider, view your medical records, and receive reminders for upcoming appointments and medications."
+
+          Positioned(
+            top: 50, left: 20, right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("${_currentPage + 1}/3", style: TextStyle(fontSize: 16)),
+                TextButton(
+                  onPressed: () {}, 
+                  child: Text("Skip", style: TextStyle(color: Colors.black)),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPage({required String imagePath, required String title, required String description}) {
+  Widget _buildPage(String image, String title, String description, VoidCallback onPressed) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // إضافة الصورة هنا
-        Padding(
-          padding: const EdgeInsets.only(bottom: 40.0),
-          child: Image.asset(imagePath, height: 250), // يمكنك التحكم بالحجم
+        Image.asset(image, height: 400, fit: BoxFit.contain),
+        SizedBox(height: 30),
+        
+        SmoothPageIndicator(
+          controller: _controller,
+          count: 3,
+          effect: WormEffect(dotHeight: 10, dotWidth: 10, activeDotColor: Colors.blue),
         ),
+        SizedBox(height: 30),
+        
         Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        
         Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Text(description, textAlign: TextAlign.center),
+          padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+          child: Text(
+            description,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+          ),
         ),
-        ElevatedButton(
-          onPressed: () => _controller.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease),
-          child: Text("Next"),
+        
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF1E1E66),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              minimumSize: Size(double.infinity, 50),
+            ),
+            onPressed: onPressed, // هنا نستخدم الوظيفة الممررة
+            child: Text("Next", style: TextStyle(color: Colors.white, fontSize: 16)),
+          ),
         ),
       ],
     );

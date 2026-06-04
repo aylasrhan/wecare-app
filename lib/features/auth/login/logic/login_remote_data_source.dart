@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../../core/networking/api_constants.dart';
+import '../../../../core/networking/api_constants.dart';
 
 class LoginRemoteDataSource {
   Future<String> login(String email, String password) async {
