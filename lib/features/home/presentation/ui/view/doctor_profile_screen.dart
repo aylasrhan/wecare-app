@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wecare/features/home/presentation/ui/view/book_appointment_page.dart';
 
 class DoctorProfileScreen extends StatelessWidget {
   @override
@@ -99,8 +100,10 @@ class DoctorProfileScreen extends StatelessWidget {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // كود الحجز هنا
-                    },
+Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => BookAppointmentPage()),
+    );                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF1E1E66), // الكحلي الغامق
                       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),

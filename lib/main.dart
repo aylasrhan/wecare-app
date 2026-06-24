@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // لا تنسي عمل import
+import 'package:wecare/core/services/auth_service.dart';
+import 'package:wecare/features/auth/login/presentation/cubit/auth_bloc.dart';
 import 'package:wecare/features/onboarding/presentation/ui/view/onboarding_screen.dart';
 
 void main() {
@@ -8,15 +11,16 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      
-      home: OnboardingPage(),
+    // نقوم بتغليف التطبيق بـ BlocProvider
+    return BlocProvider(
+      create: (context) => AuthBloc(AuthService()), 
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'WeCare',
+        home: OnboardingPage(),
+      ),
     );
   }
 }
-
-
