@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:wecare/core/services/auth_service.dart'; // تأكدي من المسار
 import 'package:wecare/features/auth/sign_up/presentation/ui/view/success_screen.dart';
 
-class VerifyEmailPage extends StatelessWidget {
+class VerifyEmailPage extends StatefulWidget {
+  @override
+  State<VerifyEmailPage> createState() => _VerifyEmailPageState();
+}
+
+class _VerifyEmailPageState extends State<VerifyEmailPage> {
+  // تعريف الـ Controllers للأرقام الأربعة
+  final List<TextEditingController> _codeControllers = 
+      List.generate(4, (index) => TextEditingController());
+
+  @override
+  void dispose() {
+    // تنظيف الـ Controllers عند إغلاق الصفحة
+    for (var controller in _codeControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +47,7 @@ class VerifyEmailPage extends StatelessWidget {
             // حقول إدخال الكود الأربعة
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(4, (index) => _buildCodeField(context)),
+              children: List.generate(4, (index) => _buildCodeField(context, index)),
             ),
             
             SizedBox(height: 40),
@@ -39,11 +58,30 @@ class VerifyEmailPage extends StatelessWidget {
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              onPressed: () {
-Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => AccountCreatedPage()),
-  );              },
+              onPressed: () async {
+                // تجميع الكود من الـ Controllers
+                String code = _codeControllers.map((c) => c.text).join();
+                
+                if (code.length == 4) {
+                  try {
+                    // استدعاء دالة التفعيل (تأكدي أن الـ AuthService يمرر التوكين في الهيدر)
+                    await AuthService().verifyCode(code);
+                    
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => AccountCreatedPage()),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("خطأ: الكود غير صحيح أو انتهت صلاحيته")),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("يرجى إدخال الكود كاملاً")),
+                  );
+                }
+              },
               child: Text("Continue", style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
             
@@ -54,8 +92,17 @@ Navigator.pushReplacement(
               children: [
                 Text("Don't receive code? "),
                 GestureDetector(
-                  onTap: () {
-                    // منطق إعادة إرسال الكود
+                  onTap: () async {
+                    try {
+                      await AuthService().resendCode();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("تم إعادة إرسال الكود")),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("فشل إعادة الإرسال")),
+                      );
+                    }
                   },
                   child: Text("Resend Email", style: TextStyle(color: Color(0xFF1E1E66), fontWeight: FontWeight.bold)),
                 ),
@@ -67,13 +114,16 @@ Navigator.pushReplacement(
     );
   }
 
-  Widget _buildCodeField(BuildContext context) {
+  // تعديل الدالة لتستقبل الـ index وتربط الـ Controller
+  Widget _buildCodeField(BuildContext context, int index) {
     return SizedBox(
       width: 60,
       height: 60,
       child: TextFormField(
+        controller: _codeControllers[index],
         onChanged: (value) {
           if (value.length == 1) FocusScope.of(context).nextFocus();
+          if (value.isEmpty) FocusScope.of(context).previousFocus();
         },
         decoration: InputDecoration(
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
