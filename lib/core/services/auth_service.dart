@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wecare/features/auth/login/data/models/user_model.dart';
 
 class AuthService {
@@ -20,49 +21,63 @@ class AuthService {
     }
   }
 
+ 
   Future<Map<String, dynamic>> register({
-    required String name,
-    required String email,
-    required String password,
-    required String passwordConfirmation,
-    required String motherName,
-    required String mobile,
-    required String birthDate,
-    required String sex,
-    required String blood,
-    required String city,
-    required String nationality,
-    required String address,
-  }) async {
-    final response = await http.post(
-      Uri.parse('${baseUrl}register'),
-      body: {
-        'name': name,
-        'email': email,
-        'password': password,
-        'c_password': passwordConfirmation,
-        'mother_name': motherName,
-        'mobile': mobile,
-        'birth_date': birthDate,
-        'sex': sex,
-        'blood': blood,
-        'p_city': city,
-        'nationality': nationality,
-        'address': address,
-      },
-    );
+  required String name,
+  required String email,
+  required String password,
+  required String passwordConfirmation,
+  required String motherName,
+  required String mobile,
+  required String birthDate,
+  required String sex,
+  required String blood,
+  required String city,
+  required String nationality,
+  required String address,
+}) async {
+  final response = await http.post(
+    Uri.parse('${baseUrl}register'),
+    body: {
+      'name': name,
+      'email': email,
+      'password': password,
+      'c_password': passwordConfirmation,
+      'mother_name': motherName,
+      'mobile': mobile,
+      'birth_date': birthDate,
+      'sex': sex,
+      'blood': blood,
+      'p_city': city,
+      'nationality': nationality,
+      'address': address,
+    },
+  );
 
-    print("Register Status: ${response.statusCode}");
-    print("Register Body: ${response.body}");
+  print("Register Status: ${response.statusCode}");
+  print("Register Body: ${response.body}");
 
-    final data = json.decode(response.body);
-    
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return data;
-    } else {
-      throw Exception(data['message'] ?? 'Failed to register');
+  final data = json.decode(response.body);
+
+  if (response.statusCode == 200 || response.statusCode == 201) {
+    // التحقق من وجود التوكين في الاستجابة وحفظه
+    // نستخدم data['user_token'] بناءً على ما يرجعه الكنترولر لديك
+    if (data.containsKey('user_token')) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_token', data['user_token']);
+      print("تم حفظ التوكين بنجاح: ${data['user_token']}");
     }
+    
+    return data;
+  } else {
+    // معالجة الأخطاء إذا كانت تأتي داخل مصفوفة errors
+    String errorMessage = data['message'] ?? 'Failed to register';
+    if (data.containsKey('errors')) {
+      errorMessage = data['errors'].toString();
+    }
+    throw Exception(errorMessage);
   }
+}
 Future<List<String>> getNationalities() async {
   try {
     print("جاري الاتصال بـ: ${baseUrl}get-nationalities");
@@ -99,6 +114,46 @@ Future<List<String>> getCities() async {
     return list.map((item) => item['name'].toString()).toList();
   } else {
     throw Exception('Failed to load cities');
+  }
+}
+
+Future<void> verifyCode(String code) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token');
+
+  print("إرسال الكود: $code مع التوكين: $token");
+
+  final response = await http.post(
+    Uri.parse('${baseUrl}email/verify'), // التعديل هنا: إضافة email/
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+    body: {'code': code},
+  );
+
+  print("نتيجة التحقق: ${response.statusCode} - ${response.body}");
+
+  if (response.statusCode != 200) {
+    throw Exception('الكود غير صحيح أو انتهت صلاحيته');
+  }
+}
+
+// دالة إعادة إرسال الكود
+Future<void> resendCode() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token');
+
+  final response = await http.post(
+    Uri.parse('${baseUrl}email/resend'), // التعديل هنا: إضافة email/
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );  
+  
+  if (response.statusCode != 200) {
+    throw Exception('فشل في إعادة إرسال الكود');
   }
 }
 }
