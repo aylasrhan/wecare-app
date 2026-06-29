@@ -1,5 +1,8 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:wecare/features/home/presentation/ui/view/appointments_page.dart';
 import 'package:wecare/features/home/presentation/ui/view/details_eyes.dart';
 import 'package:wecare/features/home/presentation/ui/view/details_physical.dart';
@@ -52,7 +55,123 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
 }
 
 // كود محتوى الصفحة الرئيسية (بدون الـ Scaffold والـ NavBar)
-class HomePageContent extends StatelessWidget {
+class HomePageContent extends StatefulWidget {
+  @override
+  State<HomePageContent> createState() => _HomePageContentState();
+}
+
+class _HomePageContentState extends State<HomePageContent> {
+  List clinics = [];
+  bool isLoading = true;
+  final String baseUrl = "http://10.0.2.2:8000/api";
+  @override
+  void initState() {
+    super.initState();
+    fetchClinics();
+  }
+Future<void> fetchClinics() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/clinics'));
+      
+      // طباعة الرد للتأكد
+      print("Status Code: ${response.statusCode}");
+      print("Raw Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        
+        setState(() {
+          // اختبار ذكي: إذا كان data هو مصفوفة، نستخدمها مباشرة
+          // إذا كان data يحتوي على 'data' نستخدمه
+          if (data is List) {
+             clinics = data;
+          } else if (data is Map && data.containsKey('data')) {
+             clinics = data['data'];
+          } else {
+             print("تحذير: هيكل البيانات غير متوقع!");
+             clinics = [];
+          }
+          
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error: $e");
+      setState(() => isLoading = false);
+    }
+  }
+  // @override
+  // Widget build(BuildContext context) {
+  //   return SafeArea(
+  //     child: SingleChildScrollView(
+  //       padding: EdgeInsets.symmetric(horizontal: 20),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           SizedBox(height: 20),
+  //           // Header
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text("Find your", style: TextStyle(fontSize: 24, color: Colors.black54)),
+  //                   Text("Specialist", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black)),
+  //                 ],
+  //               ),
+  //               Icon(Icons.notifications_none, size: 30, color: Color(0xFF1E1E66)),
+  //             ],
+  //           ),
+  //           SizedBox(height: 25),
+  //           // Search Bar
+  //           GestureDetector(
+  //             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SearchResultPage())),
+  //             child: Container(
+  //               padding: EdgeInsets.symmetric(horizontal: 15),
+  //               height: 55,
+  //               decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(15)),
+  //               child: Row(
+  //                 children: [
+  //                   Icon(Icons.search, color: Colors.grey),
+  //                   SizedBox(width: 10),
+  //                   Text("Search doctor...", style: TextStyle(color: Colors.grey)),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //           SizedBox(height: 25),
+  //           // Horizontal Categories
+  //           Container(
+  //             height: 100,
+  //             child: ListView(
+  //               scrollDirection: Axis.horizontal,
+  //               children: [
+  //                 _buildCategoryTile(context, "أذن أنف حنجرة"),
+  //                 _buildCategoryTile(context, "عينية"),
+  //                 _buildCategoryTile(context, "العلاج الفيزيائي"),
+  //               ],
+  //             ),
+  //           ),
+  //           SizedBox(height: 25),
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Text("Popular Doctor", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+  //               Text("View all", style: TextStyle(color: Color(0xFF1E1E66), fontWeight: FontWeight.bold)),
+  //             ],
+  //           ),
+  //           SizedBox(height: 15),
+  //           _buildDoctorCard(context),
+  //           SizedBox(height: 25),
+  //           Text("Upcoming Appointment", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+  //           SizedBox(height: 15),
+  //           _buildAppointmentCard(context),
+  //           SizedBox(height: 20),
+  //         ],
+  //       ),
+  //     ),
+  //   );
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -94,17 +213,18 @@ class HomePageContent extends StatelessWidget {
               ),
             ),
             SizedBox(height: 25),
-            // Horizontal Categories
+            // Horizontal Categories (الآن ديناميكي)
             Container(
               height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildCategoryTile(context, "أذن أنف حنجرة"),
-                  _buildCategoryTile(context, "عينية"),
-                  _buildCategoryTile(context, "العلاج الفيزيائي"),
-                ],
-              ),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: clinics.length,
+                      itemBuilder: (context, index) {
+                        return _buildCategoryTile(context, clinics[index]['name_ar']);
+                      },
+                    ),
             ),
             SizedBox(height: 25),
             Row(
@@ -125,6 +245,26 @@ class HomePageContent extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildCategoryTile(BuildContext context, String title) {
+    return GestureDetector(
+      onTap: () {
+        if (title == "العلاج الفيزيائي") Navigator.push(context, MaterialPageRoute(builder: (context) => PhysiotherapyPage()));
+        else if (title == "عينية") Navigator.push(context, MaterialPageRoute(builder: (context) => DetailsEyeScreen()));
+      },
+      child: Container(
+        width: 110,
+        margin: EdgeInsets.only(right: 15),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Center(child: Text(title, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+      ),
+    );
+  }
   }
 
   Widget _buildCategoryTile(BuildContext context, String title) {
@@ -203,4 +343,3 @@ class HomePageContent extends StatelessWidget {
       ),
     );
   }
-}
