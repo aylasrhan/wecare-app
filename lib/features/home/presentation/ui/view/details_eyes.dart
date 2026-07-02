@@ -202,6 +202,7 @@ class _DetailsEyeScreenState extends State<DetailsEyeScreen> {
 
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
+        
         print("البيانات القادمة من السيرفر: $data");
         setState(() {
           doctors = data['doctors']; // تأكدي من مفتاح البيانات في الـ JSON (هل هو 'doctors' أم 'data'؟)
@@ -243,8 +244,8 @@ class _DetailsEyeScreenState extends State<DetailsEyeScreen> {
                   itemBuilder: (context, index) {
                     var doctor = doctors[index];
                     return _buildDoctorCard(
-                      doctor['name'] ?? "غير معروف",
-                      doctor['rate']?.toString() ?? "0.0"
+                      doctor['name_ar'] ?? "غير معروف", // استخدمنا name_ar كما هو في قاعدة البيانات
+    doctor['total_rate']?.toString() ?? "0.0"
                     );
                   },
                 ),
