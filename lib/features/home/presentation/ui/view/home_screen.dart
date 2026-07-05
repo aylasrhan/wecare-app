@@ -111,37 +111,7 @@ Future<String?> getToken() async {
     print("خطأ في جلب الأطباء: $e");
   }
 }
-// Future<void> fetchClinics() async {
-//     try {
-//       final response = await http.get(Uri.parse('$baseUrl/clinics'));
-      
-//       // طباعة الرد للتأكد
-//       print("Status Code: ${response.statusCode}");
-//       print("Raw Body: ${response.body}");
 
-//       if (response.statusCode == 200) {
-//         var data = json.decode(response.body);
-        
-//         setState(() {
-//           // اختبار ذكي: إذا كان data هو مصفوفة، نستخدمها مباشرة
-//           // إذا كان data يحتوي على 'data' نستخدمه
-//           if (data is List) {
-//              clinics = data;
-//           } else if (data is Map && data.containsKey('data')) {
-//              clinics = data['data'];
-//           } else {
-//              print("تحذير: هيكل البيانات غير متوقع!");
-//              clinics = [];
-//           }
-          
-//           isLoading = false;
-//         });
-//       }
-//     } catch (e) {
-//       print("Error: $e");
-//       setState(() => isLoading = false);
-//     }
-//   }
 Future<void> fetchClinics() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/clinics'));
@@ -241,44 +211,7 @@ Future<void> fetchClinics() async {
     );
   }
 
-  // Widget _buildCategoryTile(BuildContext context, String title) {
-  //   return GestureDetector(
-  //     onTap: () {
-  //       if (title == "العلاج الفيزيائي") Navigator.push(context, MaterialPageRoute(builder: (context) => PhysiotherapyPage()));
-  //       else if (title == "عينية") Navigator.push(context, MaterialPageRoute(builder: (context) => DetailsEyeScreen()));
-  //     },
-  //     child: Container(
-  //       width: 110,
-  //       margin: EdgeInsets.only(right: 15),
-  //       decoration: BoxDecoration(
-  //         color: Colors.grey[100],
-  //         borderRadius: BorderRadius.circular(20),
-  //         border: Border.all(color: Colors.grey.shade300),
-  //       ),
-  //       child: Center(child: Text(title, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
-  //     ),
-  //   );
-  // }
-  // }
-
-  // Widget _buildCategoryTile(BuildContext context, String title) {
-  //   return GestureDetector(
-  //     onTap: () {
-  //       if (title == "العلاج الفيزيائي") Navigator.push(context, MaterialPageRoute(builder: (context) => PhysiotherapyPage()));
-  //       else if (title == "عينية") Navigator.push(context, MaterialPageRoute(builder: (context) => DetailsEyeScreen()));
-  //     },
-  //     child: Container(
-  //       width: 110,
-  //       margin: EdgeInsets.only(right: 15),
-  //       decoration: BoxDecoration(
-  //         color: Colors.grey[100],
-  //         borderRadius: BorderRadius.circular(20),
-  //         border: Border.all(color: Colors.grey.shade300),
-  //       ),
-  //       child: Center(child: Text(title, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
-  //     ),
-  //   );
-  // }
+ 
 
   Widget _buildDoctorCard(BuildContext context) {
     return GestureDetector(
