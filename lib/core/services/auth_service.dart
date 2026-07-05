@@ -8,19 +8,28 @@ class AuthService {
   final String baseUrl = "http://10.0.2.2:8000/api/";
 
   Future<UserModel> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('${baseUrl}Api_login'),
-      body: {'email': email, 'password': password},
-    );
-    
-    final data = json.decode(response.body);
-    if (response.statusCode == 200) {
-      return UserModel.fromJson(data);
+  final response = await http.post(
+    Uri.parse('${baseUrl}Api_login'),
+    body: {'email': email, 'password': password},
+  );
+  
+  final data = json.decode(response.body);
+  
+  if (response.statusCode == 200) {
+    // التعديل هنا: السيرفر يرسل 'user_token' وليس 'token'
+    // ويجب أن نستخدم نفس المفتاح عند الحفظ في SharedPreferences
+    if (data.containsKey('user_token')) { 
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_token', data['user_token']); // تأكدي أننا نأخذ القيمة من 'user_token'
+      print("تم حفظ التوكين بنجاح: ${data['user_token']}");
     } else {
-      throw Exception(data['message'] ?? 'Failed to login');
+      print("خطأ: السيرفر لم يرسل مفتاح 'user_token'. الرد كان: $data");
     }
+    return UserModel.fromJson(data);
+  } else {
+    throw Exception(data['message'] ?? 'Failed to login');
   }
-
+}
  
   Future<Map<String, dynamic>> register({
   required String name,
@@ -155,5 +164,35 @@ Future<void> resendCode() async {
   if (response.statusCode != 200) {
     throw Exception('فشل في إعادة إرسال الكود');
   }
+}
+// أضيفي هذا الكود داخل الـ Class (قبل قوس الإغلاق الأخير للـ Class)
+Future<List<dynamic>> getDoctors(int subgrp) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token'); 
+
+  print("جاري جلب الأطباء بالتوكين: $token");
+
+  final response = await http.get(
+    Uri.parse('${baseUrl}doctors/subgrp/$subgrp'), // تأكدي من صحة هذا الرابط
+    headers: {
+      'Authorization': 'Bearer $token', // هذا هو الجزء الذي كان ناقصاً
+      'Accept': 'application/json',
+    },
+  );
+
+  print("الرد من السيرفر: ${response.statusCode} - ${response.body}");
+
+  if (response.statusCode == 200) {
+    // افحصي الـ JSON جيداً، قد يكون اسم المفتاح 'doctors' أو 'data'
+    return json.decode(response.body)['doctors']; 
+  } else {
+    throw Exception('فشل الاتصال: ${response.statusCode}');
+  }
+}
+
+Future<String?> getToken() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token'); // هذا صحيح، المهم أن يكون الاسم مطابقاً للحفظ
+  return token;
 }
 }
