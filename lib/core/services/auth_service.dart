@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wecare/features/auth/login/data/models/user_model.dart';
+import 'package:wecare/model/doctor_model.dart';
 
 class AuthService {
   final String baseUrl = "http://10.0.2.2:8000/api/";
@@ -165,34 +166,58 @@ Future<void> resendCode() async {
     throw Exception('فشل في إعادة إرسال الكود');
   }
 }
+// // أضيفي هذا الكود داخل الـ Class (قبل قوس الإغلاق الأخير للـ Class)
+// Future<List<dynamic>> getDoctors(int subgrp) async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   String? token = prefs.getString('user_token'); 
+
+//   print("جاري جلب الأطباء بالتوكين: $token");
+
+//   final response = await http.get(
+//     Uri.parse('${baseUrl}doctors/subgrp/$subgrp'), // تأكدي من صحة هذا الرابط
+//     headers: {
+//       'Authorization': 'Bearer $token', // هذا هو الجزء الذي كان ناقصاً
+//       'Accept': 'application/json',
+//     },
+//   );
+
+//   print("الرد من السيرفر: ${response.statusCode} - ${response.body}");
+
+//   if (response.statusCode == 200) {
+//     // افحصي الـ JSON جيداً، قد يكون اسم المفتاح 'doctors' أو 'data'
+//     return json.decode(response.body)['doctors']; 
+//   } else {
+//     throw Exception('فشل الاتصال: ${response.statusCode}');
+//   }
+// }
 // أضيفي هذا الكود داخل الـ Class (قبل قوس الإغلاق الأخير للـ Class)
-Future<List<dynamic>> getDoctors(int subgrp) async {
+Future<List<Doctor>> getDoctors(int subgrp) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token'); 
 
-  print("جاري جلب الأطباء بالتوكين: $token");
-
-  final response = await http.get(
-    Uri.parse('${baseUrl}doctors/subgrp/$subgrp'), // تأكدي من صحة هذا الرابط
+  final response = await http.post(
+    Uri.parse('${baseUrl}doctors_by_department'), 
     headers: {
-      'Authorization': 'Bearer $token', // هذا هو الجزء الذي كان ناقصاً
+      'Authorization': 'Bearer $token',
       'Accept': 'application/json',
     },
+    body: {'subgrp': subgrp.toString()},
   );
 
-  print("الرد من السيرفر: ${response.statusCode} - ${response.body}");
+  print("الرد النهائي من السيرفر: ${response.body}");
 
   if (response.statusCode == 200) {
-    // افحصي الـ JSON جيداً، قد يكون اسم المفتاح 'doctors' أو 'data'
-    return json.decode(response.body)['doctors']; 
+    // 1. نقوم بفك ترميز الـ JSON
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    
+    // 2. نستخرج القائمة (التي تحمل اسم 'doctors')
+    final List<dynamic> doctorsData = responseData['doctors'];
+
+    // 3. نحول كل عنصر في القائمة إلى كائن من نوع Doctor
+    return doctorsData.map((json) => Doctor.fromJson(json)).toList();
+    
   } else {
     throw Exception('فشل الاتصال: ${response.statusCode}');
   }
-}
-
-Future<String?> getToken() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? token = prefs.getString('user_token'); // هذا صحيح، المهم أن يكون الاسم مطابقاً للحفظ
-  return token;
 }
 }
