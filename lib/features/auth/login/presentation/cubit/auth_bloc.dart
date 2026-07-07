@@ -8,6 +8,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc(this.authService) : super(AuthInitial()) {
     on<LoginEvent>((event, emit) async {
+      print("جاري تسجيل الدخول كـ: " + event.role); // أضف هذا السطر
       emit(AuthLoading()); // حالة التحميل
       try {
         final user = await authService.login(event.email, event.password);

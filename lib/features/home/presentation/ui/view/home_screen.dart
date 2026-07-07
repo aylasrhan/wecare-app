@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -39,8 +38,14 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
         onTap: (index) => setState(() => _currentIndex = index),
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: "Visits"),
-          BottomNavigationBarItem(icon: Icon(Icons.medical_services), label: "Medical"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month),
+            label: "Visits",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.medical_services),
+            label: "Medical",
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: "More"),
         ],
       ),
@@ -58,12 +63,36 @@ class _HomePageContentState extends State<HomePageContent> {
   List clinics = [];
   bool isLoading = true;
   final String baseUrl = "http://10.0.2.2:8000/api";
-
+List upcomingAppointments = [];
   @override
   void initState() {
     super.initState();
     fetchClinics();
     fetchFamousDoctors();
+    fetchAppointments();
+  }
+
+Future<void> fetchAppointments() async {
+    String? token = await getToken();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/patient-appointments'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+      print("استجابة السيرفر الخام: ${response.body}");
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        setState(() {
+          upcomingAppointments = data['upcoming_Appointment'] ?? [];
+          print("عدد المواعيد التي وصلت من السيرفر: ${upcomingAppointments.length}");
+        });
+      }
+    } catch (e) {
+      print("Error fetching appointments: $e");
+    }
   }
 
   Future<String?> getToken() async {
@@ -76,13 +105,20 @@ class _HomePageContentState extends State<HomePageContent> {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/famous_doctors'),
-        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
       );
       if (response.statusCode == 200) {
-        var data = json.decode(utf8.decode(response.bodyBytes, allowMalformed: true));
+        var data = json.decode(
+          utf8.decode(response.bodyBytes, allowMalformed: true),
+        );
         setState(() => famousDoctors = data['data']);
       }
-    } catch (e) { print("Error: $e"); }
+    } catch (e) {
+      print("Error: $e");
+    }
   }
 
   Future<void> fetchClinics() async {
@@ -112,44 +148,94 @@ class _HomePageContentState extends State<HomePageContent> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text("Find your", style: TextStyle(fontSize: 24, color: Colors.black54)),
-                  Text("Specialist", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-                ]),
-                Icon(Icons.notifications_none, size: 30, color: Color(0xFF1E1E66)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Find your",
+                      style: TextStyle(fontSize: 24, color: Colors.black54),
+                    ),
+                    Text(
+                      "Specialist",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(
+                  Icons.notifications_none,
+                  size: 30,
+                  color: Color(0xFF1E1E66),
+                ),
               ],
             ),
             SizedBox(height: 25),
             GestureDetector(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SearchResultPage())),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SearchResultPage()),
+              ),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 15), height: 55,
-                decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(15)),
-                child: Row(children: [Icon(Icons.search, color: Colors.grey), SizedBox(width: 10), Text("Search doctor...", style: TextStyle(color: Colors.grey))]),
+                padding: EdgeInsets.symmetric(horizontal: 15),
+                height: 55,
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.search, color: Colors.grey),
+                    SizedBox(width: 10),
+                    Text(
+                      "Search doctor...",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
             ),
             SizedBox(height: 25),
             Container(
               height: 120,
-              child: isLoading ? Center(child: CircularProgressIndicator()) : ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: clinics.length,
-                itemBuilder: (context, index) => _buildCategoryTile(clinics[index]),
-              ),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: clinics.length,
+                      itemBuilder: (context, index) =>
+                          _buildCategoryTile(clinics[index]),
+                    ),
             ),
             SizedBox(height: 25),
-            Text("Popular Doctor", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              "Popular Doctor",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 15),
             ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               itemCount: famousDoctors.length,
-              itemBuilder: (context, index) => _buildDoctorCard(famousDoctors[index]),
+              itemBuilder: (context, index) =>
+                  _buildDoctorCard(famousDoctors[index]),
             ),
             SizedBox(height: 25),
-            Text("Upcoming Appointment", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              "Upcoming Appointment",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 15),
-            _buildAppointmentCard(context),
+            // _buildAppointmentCard(context,upcomingAppointments[index]),
+           upcomingAppointments.isEmpty 
+  ? Text("لا توجد مواعيد قادمة") 
+  : ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: upcomingAppointments.length,
+      itemBuilder: (context, index) => _buildAppointmentCard(context, upcomingAppointments[index]),
+    ),
             SizedBox(height: 20),
           ],
         ),
@@ -160,48 +246,117 @@ class _HomePageContentState extends State<HomePageContent> {
   Widget _buildDoctorCard(Map doctor) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(
-          builder: (context) => DoctorProfileScreen(doctor: Doctor.fromJson(Map<String, dynamic>.from(doctor))),
-        ));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DoctorProfileScreen(
+              doctor: Doctor.fromJson(Map<String, dynamic>.from(doctor)),
+            ),
+          ),
+        );
       },
       child: Container(
-        padding: EdgeInsets.all(15), margin: EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
-        child: Row(children: [
-          CircleAvatar(radius: 35, backgroundColor: Colors.blue.shade100, child: Icon(Icons.person, size: 40)),
-          SizedBox(width: 15),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(doctor['name_ar'] ?? "غير معروف", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(doctor['specialization_ar'] ?? "طبيب", style: TextStyle(color: Colors.grey)),
-          ])),
-          Icon(Icons.chat_bubble_outline, color: Color(0xFF1E1E66)),
-        ]),
+        padding: EdgeInsets.all(15),
+        margin: EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 35,
+              backgroundColor: Colors.blue.shade100,
+              child: Icon(Icons.person, size: 40),
+            ),
+            SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    doctor['name_ar'] ?? "غير معروف",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    doctor['specialization_ar'] ?? "طبيب",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chat_bubble_outline, color: Color(0xFF1E1E66)),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCategoryTile(Map clinic) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailsEyeScreen(clinicId: clinic['id'], clinicName: clinic['name_ar']))),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DetailsEyeScreen(
+            clinicId: clinic['id'],
+            clinicName: clinic['name_ar'],
+          ),
+        ),
+      ),
       child: Container(
-        width: 110, margin: EdgeInsets.only(right: 15),
-        decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey.shade300)),
-        child: Center(child: Text(clinic['name_ar'], textAlign: TextAlign.center)),
+        width: 110,
+        margin: EdgeInsets.only(right: 15),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Center(
+          child: Text(clinic['name_ar'], textAlign: TextAlign.center),
+        ),
       ),
     );
   }
 
-  Widget _buildAppointmentCard(BuildContext context) {
+  Widget _buildAppointmentCard(BuildContext context,dynamic appointment) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AppointmentsPage())),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => AppointmentsPage()),
+      ),
       child: Container(
         padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
-        child: Column(children: [
-          Row(children: [CircleAvatar(radius: 25, child: Icon(Icons.person)), SizedBox(width: 15), Text("Samer Ali")]),
-          Divider(height: 25),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Row(children: [Icon(Icons.access_time), SizedBox(width: 5), Text("2023-08-23")]), Icon(Icons.info_outline)])
-        ]),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(radius: 25, child: Icon(Icons.person)),
+                SizedBox(width: 15),
+                Text(appointment['doctor_name'] ?? "اسم الطبيب"),
+              ],
+            ),
+            Divider(height: 25),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.access_time),
+                    SizedBox(width: 5),
+                   Text("${appointment['appointment_date']} | ${appointment['time']}")
+                  ],
+                ),
+                Icon(Icons.info_outline),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
