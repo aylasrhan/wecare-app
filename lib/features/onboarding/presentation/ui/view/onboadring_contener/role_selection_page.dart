@@ -18,7 +18,7 @@ class RoleSelectionPage extends StatelessWidget {
               onPressed: () {
 Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SignInPage()),
+      MaterialPageRoute(builder: (context) => SignInPage(role: 'patient')),
     );              },
             ),
             Divider(color: Colors.white24, height: 40, thickness: 1),
@@ -27,8 +27,10 @@ Navigator.push(
               imagePath: "assets/images/doc.png",
               title: "Doctor Side App",
               onPressed: () {
-                // انتقل لشاشة تسجيل دخول الطبيب
-              },
+Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignInPage(role: 'doctor')), 
+    );              },
             ),
           ],
         ),
