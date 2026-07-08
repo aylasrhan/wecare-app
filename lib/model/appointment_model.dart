@@ -2,25 +2,21 @@ class Appointment {
   final int id;
   final String appointmentDate;
   final String appointmentTime;
-  final String status;
-  final Map<String, dynamic>? doctor; // لجلب بيانات الطبيب المرتبطة
+  final String doctorName; // السيرفر يرسل doctor_name
 
   Appointment({
     required this.id,
     required this.appointmentDate,
     required this.appointmentTime,
-    required this.status,
-    this.doctor,
+    required this.doctorName,
   });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
       id: json['id'],
       appointmentDate: json['appointment_date'] ?? '',
-      appointmentTime: json['appointment_time'] ?? '',
-      status: json['status'] ?? '',
-      // هنا نربط بيانات الطبيب إذا كانت موجودة في الـ JSON
-      doctor: json['doctor'] != null ? Map<String, dynamic>.from(json['doctor']) : null,
+      appointmentTime: json['time'] ?? '', // السيرفر يرسل المفتاح باسم 'time'
+      doctorName: json['doctor_name'] ?? 'غير معروف', // السيرفر يرسل 'doctor_name'
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wecare/core/services/auth_service.dart';
 import 'package:wecare/features/home/presentation/ui/view/appointments_page.dart';
 import 'package:wecare/features/home/presentation/ui/view/details_eyes.dart';
 import 'package:wecare/features/home/presentation/ui/view/doctor_profile_screen.dart';
@@ -71,29 +72,46 @@ List upcomingAppointments = [];
     fetchFamousDoctors();
     fetchAppointments();
   }
-
+// في ملف الـ Home
 Future<void> fetchAppointments() async {
-    String? token = await getToken();
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/patient-appointments'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
-      print("استجابة السيرفر الخام: ${response.body}");
-      if (response.statusCode == 200) {
-        var data = json.decode(response.body);
-        setState(() {
-          upcomingAppointments = data['upcoming_Appointment'] ?? [];
-          print("عدد المواعيد التي وصلت من السيرفر: ${upcomingAppointments.length}");
-        });
-      }
-    } catch (e) {
-      print("Error fetching appointments: $e");
-    }
+  try {
+    // إنشاء كائن من AuthService
+    AuthService authService = AuthService();
+    
+    // استدعاء الدالة الصحيحة التي كتبناها في الـ AuthService
+    List<dynamic> appointments = await authService.getPatientAppointments();
+    
+    setState(() {
+      upcomingAppointments = appointments; // الآن هذه القائمة ستحتوي على البيانات الصحيحة
+      print("عدد المواعيد التي وصلت من السيرفر: ${upcomingAppointments.length}");
+    });
+  } catch (e) {
+    print("Error fetching appointments: $e");
   }
+}
+// Future<void> fetchAppointments() async {
+//     String? token = await getToken();
+//     print("التوكين المستخدم في الهوم: $token");
+//     try {
+//       final response = await http.get(
+//         Uri.parse('$baseUrl/patient-appointments'),
+//         headers: {
+//           'Authorization': 'Bearer $token',
+//           'Accept': 'application/json',
+//         },
+//       );
+//       print("استجابة السيرفر الخام: ${response.body}");
+//       if (response.statusCode == 200) {
+//         var data = json.decode(response.body);
+//         setState(() {
+//           upcomingAppointments = data['data'] ?? [];
+//           print("عدد المواعيد التي وصلت من السيرفر: ${upcomingAppointments.length}");
+//         });
+//       }
+//     } catch (e) {
+//       print("Error fetching appointments: $e");
+//     }
+//   }
 
   Future<String?> getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

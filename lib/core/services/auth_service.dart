@@ -166,31 +166,31 @@ Future<void> resendCode() async {
     throw Exception('فشل في إعادة إرسال الكود');
   }
 }
-// // أضيفي هذا الكود داخل الـ Class (قبل قوس الإغلاق الأخير للـ Class)
-// Future<List<dynamic>> getDoctors(int subgrp) async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   String? token = prefs.getString('user_token'); 
 
-//   print("جاري جلب الأطباء بالتوكين: $token");
+Future<List<dynamic>> getPatientAppointments() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token'); 
 
-//   final response = await http.get(
-//     Uri.parse('${baseUrl}doctors/subgrp/$subgrp'), // تأكدي من صحة هذا الرابط
-//     headers: {
-//       'Authorization': 'Bearer $token', // هذا هو الجزء الذي كان ناقصاً
-//       'Accept': 'application/json',
-//     },
-//   );
+  final response = await http.get(
+    Uri.parse('${baseUrl}patient-appointments'), 
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );
 
-//   print("الرد من السيرفر: ${response.statusCode} - ${response.body}");
+  print("رد السيرفر على المواعيد: ${response.statusCode} - ${response.body}");
 
-//   if (response.statusCode == 200) {
-//     // افحصي الـ JSON جيداً، قد يكون اسم المفتاح 'doctors' أو 'data'
-//     return json.decode(response.body)['doctors']; 
-//   } else {
-//     throw Exception('فشل الاتصال: ${response.statusCode}');
-//   }
-// }
-// أضيفي هذا الكود داخل الـ Class (قبل قوس الإغلاق الأخير للـ Class)
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    
+    // التعديل هنا: استخدام المفتاح الصحيح الذي يرسله السيرفر
+    // لاحظ أننا نستخدم upcoming_Appointment كما ظهر في الـ Log
+    return responseData['upcoming_Appointment'] ?? []; 
+  } else {
+    throw Exception('فشل جلب المواعيد: ${response.statusCode}');
+  }
+}
 Future<List<Doctor>> getDoctors(int subgrp) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token'); 
