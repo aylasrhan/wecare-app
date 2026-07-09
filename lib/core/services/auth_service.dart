@@ -191,6 +191,25 @@ Future<List<dynamic>> getPatientAppointments() async {
     throw Exception('فشل جلب المواعيد: ${response.statusCode}');
   }
 }
+Future<Map<String, dynamic>> getPatientVisits() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token'); 
+
+  final response = await http.get(
+    Uri.parse('${baseUrl}visits'), // الرابط الذي أضفناه في api.php
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    return json.decode(response.body); // ترجع الـ Map كاملة (بما فيها مفتاح 'visits')
+  } else {
+    throw Exception('فشل الاتصال');
+  }
+}
+
 Future<List<Doctor>> getDoctors(int subgrp) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token'); 
