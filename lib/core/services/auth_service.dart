@@ -166,31 +166,7 @@ Future<void> resendCode() async {
     throw Exception('فشل في إعادة إرسال الكود');
   }
 }
-// // أضيفي هذا الكود داخل الـ Class (قبل قوس الإغلاق الأخير للـ Class)
-// Future<List<dynamic>> getDoctors(int subgrp) async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   String? token = prefs.getString('user_token'); 
 
-//   print("جاري جلب الأطباء بالتوكين: $token");
-
-//   final response = await http.get(
-//     Uri.parse('${baseUrl}doctors/subgrp/$subgrp'), // تأكدي من صحة هذا الرابط
-//     headers: {
-//       'Authorization': 'Bearer $token', // هذا هو الجزء الذي كان ناقصاً
-//       'Accept': 'application/json',
-//     },
-//   );
-
-//   print("الرد من السيرفر: ${response.statusCode} - ${response.body}");
-
-//   if (response.statusCode == 200) {
-//     // افحصي الـ JSON جيداً، قد يكون اسم المفتاح 'doctors' أو 'data'
-//     return json.decode(response.body)['doctors']; 
-//   } else {
-//     throw Exception('فشل الاتصال: ${response.statusCode}');
-//   }
-// }
-// أضيفي هذا الكود داخل الـ Class (قبل قوس الإغلاق الأخير للـ Class)
 Future<List<Doctor>> getDoctors(int subgrp) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token'); 
