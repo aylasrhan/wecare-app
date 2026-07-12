@@ -167,6 +167,52 @@ Future<void> resendCode() async {
   }
 }
 
+<<<<<<< HEAD
+=======
+Future<List<dynamic>> getPatientAppointments() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token'); 
+
+  final response = await http.get(
+    Uri.parse('${baseUrl}patient-appointments'), 
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );
+
+  print("رد السيرفر على المواعيد: ${response.statusCode} - ${response.body}");
+
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> responseData = json.decode(response.body);
+    
+    // التعديل هنا: استخدام المفتاح الصحيح الذي يرسله السيرفر
+    // لاحظ أننا نستخدم upcoming_Appointment كما ظهر في الـ Log
+    return responseData['upcoming_Appointment'] ?? []; 
+  } else {
+    throw Exception('فشل جلب المواعيد: ${response.statusCode}');
+  }
+}
+Future<Map<String, dynamic>> getPatientVisits() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token'); 
+
+  final response = await http.get(
+    Uri.parse('${baseUrl}visits'), // الرابط الذي أضفناه في api.php
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    return json.decode(response.body); // ترجع الـ Map كاملة (بما فيها مفتاح 'visits')
+  } else {
+    throw Exception('فشل الاتصال');
+  }
+}
+
+>>>>>>> 6479177afc8f71b8333fec09e0b3f3813a70e82e
 Future<List<Doctor>> getDoctors(int subgrp) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token'); 
