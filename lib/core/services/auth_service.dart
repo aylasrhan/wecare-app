@@ -196,26 +196,47 @@ Future<List<Doctor>> getDoctors(int subgrp) async {
     throw Exception('فشل الاتصال: ${response.statusCode}');
   }
 }
+// Future<List<dynamic>> getPatientAppointments() async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   String? token = prefs.getString('user_token');
+
+//   final response = await http.get(
+//     Uri.parse('${baseUrl}visits'), // الرابط الصحيح بناءً على ملف الـ Routes
+//     headers: {
+//       'Authorization': 'Bearer $token',
+//       'Accept': 'application/json',
+//     },
+//   );
+
+//   print("رد السيرفر للمواعيد: ${response.body}");
+
+//   if (response.statusCode == 200) {
+//     final Map<String, dynamic> data = json.decode(response.body);
+//     // نقوم بإرجاع القائمة التي وجدناها في الـ Log سابقاً تحت اسم 'upcoming_Appointment'
+//     return data['visits'] ?? [];
+//   } else {
+//     throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
+//   }
+// }
 Future<List<dynamic>> getPatientAppointments() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token');
 
+  // سنقوم بتغيير الرابط ليتصل بالـ Controller الصحيح الذي يعرض المواعيد (Appointments)
   final response = await http.get(
-    Uri.parse('${baseUrl}visits'), // الرابط الصحيح بناءً على ملف الـ Routes
+    Uri.parse('${baseUrl}pat_appoints'), // تم تغيير الرابط
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
     },
   );
 
-  print("رد السيرفر للمواعيد: ${response.body}");
-
   if (response.statusCode == 200) {
     final Map<String, dynamic> data = json.decode(response.body);
-    // نقوم بإرجاع القائمة التي وجدناها في الـ Log سابقاً تحت اسم 'upcoming_Appointment'
-    return data['visits'] ?? [];
+    // بناءً على الكود الذي أرسلتِه، البيانات تأتي تحت اسم 'upcoming_Appointment'
+    return data['upcoming_Appointment'] ?? [];
   } else {
-    throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
+    throw Exception('فشل في جلب المواعيد');
   }
 }
 }
