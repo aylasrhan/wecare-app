@@ -90,6 +90,7 @@ class AppointmentsPage extends StatelessWidget {
                   child: Text("Cancel", style: TextStyle(color: Colors.black)),
                 ),
               ),
+              // زر إعادة الجدولة
               SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
