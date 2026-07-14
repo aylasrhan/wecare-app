@@ -196,6 +196,25 @@ Future<List<Doctor>> getDoctors(int subgrp) async {
     throw Exception('فشل الاتصال: ${response.statusCode}');
   }
 }
+Future<List<dynamic>> getUpcomingAppointments() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token');
+
+  final response = await http.get(
+Uri.parse('${baseUrl}patient-appointments'),    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    return data['upcoming_Appointment'] ?? []; // البيانات الحقيقية من السيرفر
+  } else {
+  // هذا السطر سيخبركِ بالضبط لماذا فشل الطلب (مثلاً 404 أو 500)
+  throw Exception('فشل جلب المواعيد: ${response.statusCode} - ${response.body}');
+}
+}
 // Future<List<dynamic>> getPatientAppointments() async {
 //   SharedPreferences prefs = await SharedPreferences.getInstance();
 //   String? token = prefs.getString('user_token');
@@ -222,9 +241,9 @@ Future<List<dynamic>> getPatientAppointments() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token');
 
-  // سنقوم بتغيير الرابط ليتصل بالـ Controller الصحيح الذي يعرض المواعيد (Appointments)
   final response = await http.get(
-    Uri.parse('${baseUrl}pat_appoints'), // تم تغيير الرابط
+    // الرابط يجب أن يطابق ما هو موجود في api.php حرفياً
+    Uri.parse('${baseUrl}patient-appointments'), 
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
@@ -233,10 +252,12 @@ Future<List<dynamic>> getPatientAppointments() async {
 
   if (response.statusCode == 200) {
     final Map<String, dynamic> data = json.decode(response.body);
-    // بناءً على الكود الذي أرسلتِه، البيانات تأتي تحت اسم 'upcoming_Appointment'
+
+    print("DEBUG JSON: ${data['upcoming_Appointment']}");
+    // تأكدي أن المفتاح في الـ JSON هو فعلاً 'upcoming_Appointment'
     return data['upcoming_Appointment'] ?? [];
   } else {
-    throw Exception('فشل في جلب المواعيد');
+    throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
   }
 }
 }
