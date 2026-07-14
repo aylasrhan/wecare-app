@@ -316,7 +316,8 @@ Future<void> fetchAppointments() async {
   }
 
   Widget _buildAppointmentCard(BuildContext context,dynamic appointment) {
-    String clinicName = appointment['gnr_m_clinics']?['name_ar'] ?? "غير معروف";
+    String doctorName = appointment['doctor_name'] ?? "غير معروف";
+    // String clinicName = appointment['gnr_m_clinics']?['name_ar'] ?? "غير معروف";
   // String dateTime = appointment['d_start'] ?? "غير محدد";
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -336,7 +337,10 @@ Future<void> fetchAppointments() async {
               children: [
                 CircleAvatar(radius: 25, child: Icon(Icons.person)),
                 SizedBox(width: 15),
-                Text(clinicName),
+                
+                                Text(doctorName),
+
+                // Text(clinicName),
                 // Text(appointment['doctor_name'] ?? "اسم الطبيب"),
               ],
             ),
