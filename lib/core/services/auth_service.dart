@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wecare/features/auth/login/data/models/user_model.dart';
 import 'package:wecare/model/doctor_model.dart';
+import 'package:wecare/model/visit_model.dart';
 
 class AuthService {
   final String baseUrl = "http://10.0.2.2:8000/api/";
@@ -215,28 +216,7 @@ Uri.parse('${baseUrl}patient-appointments'),    headers: {
   throw Exception('فشل جلب المواعيد: ${response.statusCode} - ${response.body}');
 }
 }
-// Future<List<dynamic>> getPatientAppointments() async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   String? token = prefs.getString('user_token');
 
-//   final response = await http.get(
-//     Uri.parse('${baseUrl}visits'), // الرابط الصحيح بناءً على ملف الـ Routes
-//     headers: {
-//       'Authorization': 'Bearer $token',
-//       'Accept': 'application/json',
-//     },
-//   );
-
-//   print("رد السيرفر للمواعيد: ${response.body}");
-
-//   if (response.statusCode == 200) {
-//     final Map<String, dynamic> data = json.decode(response.body);
-//     // نقوم بإرجاع القائمة التي وجدناها في الـ Log سابقاً تحت اسم 'upcoming_Appointment'
-//     return data['visits'] ?? [];
-//   } else {
-//     throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
-//   }
-// }
 Future<List<dynamic>> getPatientAppointments() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token');
@@ -258,6 +238,27 @@ Future<List<dynamic>> getPatientAppointments() async {
     return data['upcoming_Appointment'] ?? [];
   } else {
     throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
+  }
+}
+Future<List<VisitModel>> getVisits() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token');
+
+  final response = await http.get(
+    Uri.parse('${baseUrl}pat_visits'), // تأكدي أن هذا هو الرابط الصحيح في api.php
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> data = json.decode(response.body);
+    // نقوم بتحويل قائمة الـ visits إلى VisitModel
+    List<dynamic> visitsData = data['visits'];
+    return visitsData.map((item) => VisitModel.fromJson(item)).toList();
+  } else {
+    throw Exception('فشل جلب الزيارات');
   }
 }
 }
