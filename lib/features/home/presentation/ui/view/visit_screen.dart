@@ -29,13 +29,13 @@ Future<void> fetchVisits() async {
 
   try {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/pat_visits'), // تأكدي من هذا الرابط
+      Uri.parse('http://10.0.2.2:8000/api/visits'), // تأكدي من هذا الرابط
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       },
     );
-
+print("Response Body: ${response.body}"); // هذا السطر سيخبرنا بالحقيقة
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       
