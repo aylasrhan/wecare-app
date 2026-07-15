@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wecare/features/home/presentation/ui/view/visit_details.dart';
 // تأكدي من استيراد مكتبة الاتصال بالسيرفر (مثل http أو dio)
 // import 'package:http/http.dart' as http; 
 
@@ -123,7 +124,12 @@ Text(statusText, style: TextStyle(color: statusColor)),            ],
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VisitDetailsPage(visitData: visit),
+      ),
+    );},
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF1E1E66),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
