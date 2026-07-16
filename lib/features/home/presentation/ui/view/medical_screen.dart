@@ -25,14 +25,65 @@ class _MedicalPageState extends State<MedicalPage> {
   @override
   void initState() {
     super.initState();
-    fetchClinics();
+    fetchClinics().then((_) {
+    fetchQuestions();
+  });
+    // fetchClinics();
+    // fetchQuestions();
   }
+  String getClinicName(int id) {
+  // نبحث في قائمة العيادات عن العيادة التي تطابق الـ id
+  final clinic = clinics.firstWhere(
+    (c) => c['id'] == id, 
+    orElse: () => {'name_ar': 'غير معروف'}
+  );
+  return clinic['name_ar'];
+}
+Future<void> fetchQuestions() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('user_token');
+    
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/patient_questions'),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      );
 
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(response.body);
+        if (jsonResponse['questions'] != null) {
+          setState(() {
+            // myQuestions = (jsonResponse['questions'] as List).map((q) {
+            //   return QuestionItem(
+            //     // نقوم بتحويل section (ID) إلى نص أو نستخدم الاسم إذا كان متاحاً
+            //     clinicName: "العيادة رقم: ${q['section']}", 
+            //     question: q['Question'] ?? ""
+            //   );
+            // }).toList();
+            // داخل دالة fetchQuestions:
+myQuestions = (jsonResponse['questions'] as List).map((q) {
+  // تحويل الـ section إلى int للبحث
+  int clinicId = int.tryParse(q['section'].toString()) ?? 0;
+  
+  return QuestionItem(
+    // هنا نستخدم الدالة لجلب الاسم
+    clinicName: getClinicName(clinicId), 
+    question: q['Question'] ?? ""
+  );
+}).toList();
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching questions: $e");
+    }
+    setState(() => isLoading = false);
+  }
   // دالة جلب العيادات (التي تعمل لديك)
   Future<void> fetchClinics() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('token');
+      String? token = prefs.getString('user_token');
       final response = await http.get(
         Uri.parse('$baseUrl/api/clinics'),
         headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
@@ -48,24 +99,48 @@ class _MedicalPageState extends State<MedicalPage> {
       setState(() => isLoading = false);
     }
   }
-
- void _sendQuestion() {
+Future<void> _sendQuestion() async {
   if (_questionController.text.isNotEmpty && selectedClinicId != null) {
-    // جلب اسم العيادة من القائمة الموجودة عندك
-    var selectedClinic = clinics.firstWhere((c) => c['id'] == selectedClinicId);
-    
-    setState(() {
-      // إضافة السؤال للقائمة ليتم عرضه في الأعلى
-      myQuestions.add(QuestionItem(
-        clinicName: selectedClinic['name_ar'], 
-        question: _questionController.text
-      ));
-    });
-    
-    _questionController.clear();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تم الإرسال بنجاح")));
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('user_token');
+
+    // طباعة التوكين للتأكد من أنه موجود
+    print("Token being used: $token");
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/ask'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json'
+        },
+        body: {
+          'Question': _questionController.text,
+          'section': selectedClinicId.toString(),
+        },
+      );
+
+      print("Response Code: ${response.statusCode}");
+      print("Response Body: ${response.body}"); // هذا السطر هو الأهم!
+
+      if (response.statusCode == 200) {
+        _questionController.clear();
+        setState(() => selectedClinicId = null);
+        fetchQuestions();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("تم الإرسال بنجاح")));
+      } else {
+        // عرض الخطأ القادم من السيرفر بالتفصيل
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("خطأ: ${response.body}")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("فشل الاتصال بالسيرفر")));
+    }
   }
 }
+
 
   @override
   Widget build(BuildContext context) {
