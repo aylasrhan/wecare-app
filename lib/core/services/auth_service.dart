@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../features/auth/login/data/models/user_model.dart';
-import '../../model/doctor_model.dart';
+import 'package:wecare/features/auth/login/data/models/user_model.dart';
+import 'package:wecare/model/doctor_model.dart';
+import 'package:wecare/model/visit_model.dart';
 
 class AuthService {
-  final String baseUrl = "https://10.231.78.218/api/";
+  // تم التعديل إلى http بدلاً من https لتجنب مشاكل شهادات الأمان مع الـ IP
+  final String baseUrl = "http://10.231.78.218/api/";
 
   Future<UserModel> login(String email, String password) async {
     final response = await http.post(
@@ -18,14 +19,9 @@ class AuthService {
     final data = json.decode(response.body);
 
     if (response.statusCode == 200) {
-      // التعديل هنا: السيرفر يرسل 'user_token' وليس 'token'
-      // ويجب أن نستخدم نفس المفتاح عند الحفظ في SharedPreferences
       if (data.containsKey('user_token')) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString(
-          'user_token',
-          data['user_token'],
-        ); // تأكدي أننا نأخذ القيمة من 'user_token'
+        await prefs.setString('user_token', data['user_token']);
         print("تم حفظ التوكين بنجاح: ${data['user_token']}");
       } else {
         print("خطأ: السيرفر لم يرسل مفتاح 'user_token'. الرد كان: $data");
@@ -74,17 +70,13 @@ class AuthService {
     final data = json.decode(response.body);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      // التحقق من وجود التوكين في الاستجابة وحفظه
-      // نستخدم data['user_token'] بناءً على ما يرجعه الكنترولر لديك
       if (data.containsKey('user_token')) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_token', data['user_token']);
         print("تم حفظ التوكين بنجاح: ${data['user_token']}");
       }
-
       return data;
     } else {
-      // معالجة الأخطاء إذا كانت تأتي داخل مصفوفة errors
       String errorMessage = data['message'] ?? 'Failed to register';
       if (data.containsKey('errors')) {
         errorMessage = data['errors'].toString();
@@ -96,10 +88,8 @@ class AuthService {
   Future<List<String>> getNationalities() async {
     try {
       print("جاري الاتصال بـ: ${baseUrl}get-nationalities");
-
       final response = await http.get(Uri.parse('${baseUrl}get-nationalities'));
 
-      // طباعة كل شيء بوضوح
       print("الحالة: ${response.statusCode}");
       print("الرد: ${response.body}");
 
@@ -111,23 +101,17 @@ class AuthService {
         throw Exception('Server Error: ${response.statusCode}');
       }
     } catch (e) {
-      print(
-        "خطأ كشف الاتصال: $e",
-      ); // هنا سنعرف هل المشكلة SocketException أم غيره
-      throw e;
+      print("خطأ كشف الاتصال: $e");
+      rethrow; // استخدام rethrow أفضل برمجياً للحفاظ على مسار الخطأ
     }
   }
 
   Future<List<String>> getCities() async {
-    // تأكدي أن الرابط هنا هو 'cities' وليس 'get-nationalities'
     final response = await http.get(Uri.parse('${baseUrl}cities'));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = json.decode(response.body);
-
-      // تأكدي من طباعة responseData لترين ما الذي يصل فعلاً
       print("الرد من السيرفر للمدن: $responseData");
-
       List<dynamic> list = responseData['data']['cities'];
       return list.map((item) => item['name'].toString()).toList();
     } else {
@@ -142,8 +126,11 @@ class AuthService {
     print("إرسال الكود: $code مع التوكين: $token");
 
     final response = await http.post(
-      Uri.parse('${baseUrl}email/verify'), // التعديل هنا: إضافة email/
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      Uri.parse('${baseUrl}email/verify'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
       body: {'code': code},
     );
 
@@ -154,14 +141,16 @@ class AuthService {
     }
   }
 
-  // دالة إعادة إرسال الكود
   Future<void> resendCode() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('user_token');
 
     final response = await http.post(
-      Uri.parse('${baseUrl}email/resend'), // التعديل هنا: إضافة email/
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      Uri.parse('${baseUrl}email/resend'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
     );
 
     if (response.statusCode != 200) {
@@ -175,20 +164,18 @@ class AuthService {
 
     final response = await http.post(
       Uri.parse('${baseUrl}doctors_by_department'),
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
       body: {'subgrp': subgrp.toString()},
     );
 
     print("الرد النهائي من السيرفر: ${response.body}");
 
     if (response.statusCode == 200) {
-      // 1. نقوم بفك ترميز الـ JSON
       final Map<String, dynamic> responseData = json.decode(response.body);
-
-      // 2. نستخرج القائمة (التي تحمل اسم 'doctors')
       final List<dynamic> doctorsData = responseData['doctors'];
-
-      // 3. نحول كل عنصر في القائمة إلى كائن من نوع Doctor
       return doctorsData.map((json) => Doctor.fromJson(json)).toList();
     } else {
       throw Exception('فشل الاتصال: ${response.statusCode}');
@@ -200,18 +187,43 @@ class AuthService {
     String? token = prefs.getString('user_token');
 
     final response = await http.get(
-      Uri.parse('${baseUrl}visits'), // الرابط الصحيح بناءً على ملف الـ Routes
-      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      Uri.parse('${baseUrl}patient-appointments'), 
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
     );
-
-    print("رد السيرفر للمواعيد: ${response.body}");
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-      // نقوم بإرجاع القائمة التي وجدناها في الـ Log سابقاً تحت اسم 'upcoming_Appointment'
-      return data['visits'] ?? [];
+      print("DEBUG JSON: ${data['upcoming_Appointment']}");
+      return data['upcoming_Appointment'] ?? [];
     } else {
       throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
+    }
+  }
+
+  // تم دمج الدالة getUpcomingAppointments هنا لأنها كانت تطلب نفس الرابط الخاص بـ getPatientAppointments
+  // إذا كانت تؤدي غرضاً مختلفاً في الباك إند، يمكنك تغيير الرابط الخاص بها.
+
+  Future<List<VisitModel>> getUpcomingAppointments() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('user_token');
+
+    final response = await http.get(
+      Uri.parse('${baseUrl}pat_visits'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<dynamic> visitsData = data['visits'];
+      return visitsData.map((item) => VisitModel.fromJson(item)).toList();
+    } else {
+      throw Exception('فشل جلب الزيارات');
     }
   }
 }
