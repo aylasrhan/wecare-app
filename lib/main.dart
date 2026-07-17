@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // نقوم بتغليف التطبيق بـ BlocProvider
     return BlocProvider(
-      create: (context) => AuthBloc(AuthService()), 
+      create: (context) => AuthBloc(AuthService()),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'WeCare',
@@ -24,3 +24,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+ 
