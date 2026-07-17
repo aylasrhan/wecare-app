@@ -89,29 +89,7 @@ Future<void> fetchAppointments() async {
     print("Error fetching appointments: $e");
   }
 }
-// Future<void> fetchAppointments() async {
-//     String? token = await getToken();
-//     print("التوكين المستخدم في الهوم: $token");
-//     try {
-//       final response = await http.get(
-//         Uri.parse('$baseUrl/patient-appointments'),
-//         headers: {
-//           'Authorization': 'Bearer $token',
-//           'Accept': 'application/json',
-//         },
-//       );
-//       print("استجابة السيرفر الخام: ${response.body}");
-//       if (response.statusCode == 200) {
-//         var data = json.decode(response.body);
-//         setState(() {
-//           upcomingAppointments = data['data'] ?? [];
-//           print("عدد المواعيد التي وصلت من السيرفر: ${upcomingAppointments.length}");
-//         });
-//       }
-//     } catch (e) {
-//       print("Error fetching appointments: $e");
-//     }
-//   }
+
 
   Future<String?> getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -338,6 +316,9 @@ Future<void> fetchAppointments() async {
   }
 
   Widget _buildAppointmentCard(BuildContext context,dynamic appointment) {
+    String doctorName = appointment['doctor_name'] ?? "غير معروف";
+    // String clinicName = appointment['gnr_m_clinics']?['name_ar'] ?? "غير معروف";
+  // String dateTime = appointment['d_start'] ?? "غير محدد";
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -356,23 +337,28 @@ Future<void> fetchAppointments() async {
               children: [
                 CircleAvatar(radius: 25, child: Icon(Icons.person)),
                 SizedBox(width: 15),
-                Text(appointment['doctor_name'] ?? "اسم الطبيب"),
+                
+                                Text(doctorName),
+
+                // Text(clinicName),
+                // Text(appointment['doctor_name'] ?? "اسم الطبيب"),
               ],
             ),
             Divider(height: 25),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.access_time),
-                    SizedBox(width: 5),
-                   Text("${appointment['appointment_date']} | ${appointment['time']}")
-                  ],
-                ),
-                Icon(Icons.info_outline),
-              ],
-            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Row(
+            //       children: [
+            //         Icon(Icons.access_time),
+            //         SizedBox(width: 5),
+            //         Text(dateTime)
+            //       //  Text("${appointment['appointment_date']} | ${appointment['time']}")
+            //       ],
+            //     ),
+            //     Icon(Icons.info_outline),
+            //   ],
+            // ),
           ],
         ),
       ),
