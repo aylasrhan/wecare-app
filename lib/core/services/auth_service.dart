@@ -226,7 +226,7 @@ Future<List<String>> getCities() async {
   }
 }
 
-Future<void> verifyCode(String code) async {
+Future<Map<String, dynamic>> verifyCode(String code) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token');
 
@@ -246,6 +246,7 @@ Future<void> verifyCode(String code) async {
   if (response.statusCode != 200) {
     throw Exception('الكود غير صحيح أو انتهت صلاحيته');
   }
+  return jsonDecode(response.body);
 }
 
 // دالة إعادة إرسال الكود

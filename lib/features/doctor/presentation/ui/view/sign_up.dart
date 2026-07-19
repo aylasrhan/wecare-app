@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wecare/core/services/auth_service.dart';
+import 'package:wecare/features/auth/sign_up/presentation/ui/view/verify_email_screen.dart';
 
 class DoctorSignUpPage extends StatefulWidget {
   @override
@@ -46,21 +47,45 @@ class _DoctorSignUpPageState extends State<DoctorSignUpPage> {
                   backgroundColor: Color(0xFF1E1E66),
                   minimumSize: Size(double.infinity, 50),
                 ),
-               onPressed: () async {
+              onPressed: () async {
   if (_formKey.currentState!.validate()) {
     try {
-      await AuthService().register(
+      // 1. استلام الرد من السيرفر (يجب أن ترجع الدالة الـ response أو البيانات)
+      final response = await AuthService().register(
         name: nameController.text,
         email: emailController.text,
         password: passwordController.text,
         passwordConfirmation: passwordController.text,
-        role: 'Doctor', // تأكدي أن الدور مكتوب بنفس الطريقة في الـ Controller
-        mobile: licenseController.text, // أرسلنا رقم الترخيص في خانة الـ mobile كما اتفقنا
-        specialization: selectedSpecialty, // هنا يتم إرسال التخصص الذي اختاره الطبيب
+        role: 'Doctor',
+        mobile: licenseController.text,
+        specialization: selectedSpecialty,
       );
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Account Created Successfully")));
+
+      // 2. التحقق من حالة النجاح
+      if (response['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Account Created Successfully")),
+        );
+        // 3. الانتقال لصفحة التحقق هنا فقط
+        Navigator.pushReplacement(
+          context, 
+          MaterialPageRoute(builder: (context) => VerifyEmailPage()), // تأكدي من اسم صفحتك
+        );
+      } else {
+        // 4. عرض رسالة الخطأ القادمة من السيرفر (مثل: الإيميل موجود مسبقاً)
+        String errorMessage = response['msg'] is Map 
+            ? response['msg'].values.first.first 
+            : response['msg'].toString();
+            
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $errorMessage"), backgroundColor: Colors.red),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      // التعامل مع أخطاء الشبكة أو الاستثناءات
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed: ${e.toString()}")),
+      );
     }
   }
 },
