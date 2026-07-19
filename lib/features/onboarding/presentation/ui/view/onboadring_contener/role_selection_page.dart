@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wecare/features/auth/login/presentation/ui/view/sign_in.dart';
+import 'package:wecare/features/doctor/presentation/ui/view/sign_up.dart';
 
 class RoleSelectionPage extends StatelessWidget {
   @override
@@ -29,7 +30,7 @@ Navigator.push(
               onPressed: () {
 Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SignInPage(role: 'doctor')), 
+      MaterialPageRoute(builder: (context) => DoctorSignUpPage()), 
     );              },
             ),
           ],
