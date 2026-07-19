@@ -16,23 +16,37 @@ class SignInPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // BlocListener يستمع لتغيرات الحالة ويقوم برد فعل (مثل الانتقال للصفحة التالية)
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthSuccess) {
-          // هنا يتم الانتقال للهوم بعد نجاح تسجيل الدخول
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomeScreenPage()),
-          );
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Login Successful!")));
-        } else if (state is AuthError) {
-          // إظهار رسالة خطأ إذا فشل الدخول
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-          );
-        }
-      },
+      // listener: (context, state) {
+      //   if (state is AuthSuccess) {
+      //     // هنا يتم الانتقال للهوم بعد نجاح تسجيل الدخول
+      //     Navigator.pushReplacement(
+      //       context,
+      //       MaterialPageRoute(builder: (context) => HomeScreenPage()),
+      //     );
+      //     ScaffoldMessenger.of(
+      //       context,
+      //     ).showSnackBar(SnackBar(content: Text("Login Successful!")));
+      //   } else if (state is AuthError) {
+      //     // إظهار رسالة خطأ إذا فشل الدخول
+      //     ScaffoldMessenger.of(context).showSnackBar(
+      //       SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+      //     );
+      //   }
+      // },
+      // في ملف SignInPage.dart داخل الـ listener
+// داخل SignInPage.dart
+listener: (context, state) {
+  if (state is AuthSuccess) {
+    // الآن يمكنك الوصول للدور من خلال state.user.role
+    print("تم تسجيل الدخول بنجاح، الدور هو: ${state.user.role}");
+    
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreenPage()),
+    );
+  }
+  // ...
+},
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(

@@ -9,60 +9,160 @@ import 'package:wecare/model/visit_model.dart';
 class AuthService {
   final String baseUrl = "http://10.0.2.2:8000/api/";
 
-  Future<UserModel> login(String email, String password) async {
+//   Future<UserModel> login(String email, String password) async {
+//   final response = await http.post(
+//     Uri.parse('${baseUrl}Api_login'),
+//     body: {'email': email, 'password': password},
+//   );
+  
+//   final data = json.decode(response.body);
+  
+//   if (response.statusCode == 200) {
+//     // التعديل هنا: السيرفر يرسل 'user_token' وليس 'token'
+//     // ويجب أن نستخدم نفس المفتاح عند الحفظ في SharedPreferences
+//     if (data.containsKey('user_token')) { 
+//       SharedPreferences prefs = await SharedPreferences.getInstance();
+//       await prefs.setString('user_token', data['user_token']); // تأكدي أننا نأخذ القيمة من 'user_token'
+//       print("تم حفظ التوكين بنجاح: ${data['user_token']}");
+//     } else {
+//       print("خطأ: السيرفر لم يرسل مفتاح 'user_token'. الرد كان: $data");
+//     }
+//     return UserModel.fromJson(data);
+//   } else {
+//     throw Exception(data['message'] ?? 'Failed to login');
+//   }
+// }
+Future<UserModel> login(String email, String password) async {
   final response = await http.post(
     Uri.parse('${baseUrl}Api_login'),
     body: {'email': email, 'password': password},
   );
   
-  final data = json.decode(response.body);
+  final responseData = json.decode(response.body);
   
   if (response.statusCode == 200) {
-    // التعديل هنا: السيرفر يرسل 'user_token' وليس 'token'
-    // ويجب أن نستخدم نفس المفتاح عند الحفظ في SharedPreferences
+    // الوصول إلى البيانات داخل مفتاح 'data' كما في اللارفل
+    final data = responseData['data']; 
+    
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+    // 1. حفظ التوكين
     if (data.containsKey('user_token')) { 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_token', data['user_token']); // تأكدي أننا نأخذ القيمة من 'user_token'
-      print("تم حفظ التوكين بنجاح: ${data['user_token']}");
-    } else {
-      print("خطأ: السيرفر لم يرسل مفتاح 'user_token'. الرد كان: $data");
+      await prefs.setString('user_token', data['user_token']);
+      print("تم حفظ التوكين بنجاح");
     }
-    return UserModel.fromJson(data);
+    
+    // 2. حفظ الدور (roles_name)
+    if (data.containsKey('roles_name')) {
+      await prefs.setString('roles_name', data['roles_name']);
+      print("تم حفظ الدور: ${data['roles_name']}");
+    }
+    
+    return UserModel.fromJson(responseData);
   } else {
-    throw Exception(data['message'] ?? 'Failed to login');
+    throw Exception(responseData['message'] ?? 'Failed to login');
   }
 }
  
-  Future<Map<String, dynamic>> register({
+//   Future<Map<String, dynamic>> register({
+//   required String name,
+//   required String email,
+//   required String password,
+//   required String passwordConfirmation,
+//   required String motherName,
+//   required String mobile,
+//   required String birthDate,
+//   required String sex,
+//   required String blood,
+//   required String city,
+//   required String nationality,
+//   required String address,
+//   required String role,
+// }) async {
+//   final response = await http.post(
+//     Uri.parse('${baseUrl}register'),
+//     body: {
+//       'name': name,
+//       'email': email,
+//       'password': password,
+//       'c_password': passwordConfirmation,
+//       'mother_name': motherName,
+//       'mobile': mobile,
+//       'birth_date': birthDate,
+//       'sex': sex,
+//       'blood': blood,
+//       'p_city': city,
+//       'nationality': nationality,
+//       'address': address,
+//       'roles_name': role,
+//     },
+//   );
+
+//   print("Register Status: ${response.statusCode}");
+//   print("Register Body: ${response.body}");
+
+//   final data = json.decode(response.body);
+
+//   if (response.statusCode == 200 || response.statusCode == 201) {
+//     // التحقق من وجود التوكين في الاستجابة وحفظه
+//     // نستخدم data['user_token'] بناءً على ما يرجعه الكنترولر لديك
+//     if (data.containsKey('user_token')) {
+//       SharedPreferences prefs = await SharedPreferences.getInstance();
+//       await prefs.setString('user_token', data['user_token']);
+//       await prefs.setString('roles_name', role);
+//       print("تم حفظ التوكين بنجاح: ${data['user_token']}");
+//     }
+    
+//     return data;
+//   } else {
+//     // معالجة الأخطاء إذا كانت تأتي داخل مصفوفة errors
+//     String errorMessage = data['message'] ?? 'Failed to register';
+//     if (data.containsKey('errors')) {
+//       errorMessage = data['errors'].toString();
+//     }
+//     throw Exception(errorMessage);
+//   }
+// }
+Future<Map<String, dynamic>> register({
   required String name,
   required String email,
   required String password,
   required String passwordConfirmation,
-  required String motherName,
-  required String mobile,
-  required String birthDate,
-  required String sex,
-  required String blood,
-  required String city,
-  required String nationality,
-  required String address,
+  required String role,
+  // جعلنا الحقول الخاصة بالمريض اختيارية بوضع علامة ? وإزالة required
+  String? motherName,
+  String? mobile,
+  String? birthDate,
+  String? sex,
+  String? blood,
+  String? city,
+  String? nationality,
+  String? address,
+  String? specialization, // أضيفي هذا الحقل
 }) async {
+  
+  // ننشئ الـ Body بشكل ديناميكي
+  Map<String, String> body = {
+    'name': name,
+    'email': email,
+    'password': password,
+    'c_password': passwordConfirmation,
+    'roles_name': role,
+  };
+
+  // نضيف الحقول فقط إذا لم تكن null
+  if (motherName != null) body['mother_name'] = motherName;
+  if (mobile != null) body['mobile'] = mobile;
+  if (birthDate != null) body['birth_date'] = birthDate;
+  if (sex != null) body['sex'] = sex;
+  if (blood != null) body['blood'] = blood;
+  if (city != null) body['p_city'] = city;
+  if (nationality != null) body['nationality'] = nationality;
+  if (address != null) body['address'] = address;
+if (specialization != null) body['specialization'] = specialization; // أضيفي هذا السطر
   final response = await http.post(
     Uri.parse('${baseUrl}register'),
-    body: {
-      'name': name,
-      'email': email,
-      'password': password,
-      'c_password': passwordConfirmation,
-      'mother_name': motherName,
-      'mobile': mobile,
-      'birth_date': birthDate,
-      'sex': sex,
-      'blood': blood,
-      'p_city': city,
-      'nationality': nationality,
-      'address': address,
-    },
+    body: body,
   );
 
   print("Register Status: ${response.statusCode}");
@@ -71,17 +171,15 @@ class AuthService {
   final data = json.decode(response.body);
 
   if (response.statusCode == 200 || response.statusCode == 201) {
-    // التحقق من وجود التوكين في الاستجابة وحفظه
-    // نستخدم data['user_token'] بناءً على ما يرجعه الكنترولر لديك
     if (data.containsKey('user_token')) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_token', data['user_token']);
+      await prefs.setString('roles_name', role);
       print("تم حفظ التوكين بنجاح: ${data['user_token']}");
     }
     
     return data;
   } else {
-    // معالجة الأخطاء إذا كانت تأتي داخل مصفوفة errors
     String errorMessage = data['message'] ?? 'Failed to register';
     if (data.containsKey('errors')) {
       errorMessage = data['errors'].toString();
