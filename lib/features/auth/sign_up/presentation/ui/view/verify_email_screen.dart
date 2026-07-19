@@ -58,30 +58,56 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              onPressed: () async {
-                // تجميع الكود من الـ Controllers
-                String code = _codeControllers.map((c) => c.text).join();
+              // onPressed: () async {
+              //   // تجميع الكود من الـ Controllers
+              //   String code = _codeControllers.map((c) => c.text).join();
                 
-                if (code.length == 4) {
-                  try {
-                    // استدعاء دالة التفعيل (تأكدي أن الـ AuthService يمرر التوكين في الهيدر)
-                    await AuthService().verifyCode(code);
+              //   if (code.length == 4) {
+              //     try {
+              //       // استدعاء دالة التفعيل (تأكدي أن الـ AuthService يمرر التوكين في الهيدر)
+              //       await AuthService().verifyCode(code);
                     
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => AccountCreatedPage()),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("خطأ: الكود غير صحيح أو انتهت صلاحيته")),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("يرجى إدخال الكود كاملاً")),
-                  );
-                }
-              },
+              //       Navigator.pushReplacement(
+              //         context,
+              //         MaterialPageRoute(builder: (context) => AccountCreatedPage()),
+              //       );
+              //     } catch (e) {
+              //       ScaffoldMessenger.of(context).showSnackBar(
+              //         SnackBar(content: Text("خطأ: الكود غير صحيح أو انتهت صلاحيته")),
+              //       );
+              //     }
+              //   } else {
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //       SnackBar(content: Text("يرجى إدخال الكود كاملاً")),
+              //     );
+              //   }
+              // },
+              onPressed: () async {
+  String code = _codeControllers.map((c) => c.text).join();
+  
+  if (code.length == 4) {
+    try {
+      // استقبال الرد
+      var response = await AuthService().verifyCode(code);
+      
+      // التحقق من أن السيرفر أرجع نجاح
+      if (response['success'] == true) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AccountCreatedPage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'] ?? "الكود غير صحيح")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("خطأ في الاتصال بالسيرفر")),
+      );
+    }
+  }
+},
               child: Text("Continue", style: TextStyle(color: Colors.white, fontSize: 16)),
             ),
             
