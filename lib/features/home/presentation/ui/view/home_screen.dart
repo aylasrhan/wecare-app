@@ -316,7 +316,8 @@ Future<void> fetchAppointments() async {
   }
 
   Widget _buildAppointmentCard(BuildContext context,dynamic appointment) {
-    String doctorName = appointment['doctor_name'] ?? "غير معروف";
+    // String doctorName = appointment['doctor_name'] ?? "غير معروف";
+    String doctorName = appointment['doctor_name']?.toString() ?? "طبيب غير معروف";
     // String clinicName = appointment['gnr_m_clinics']?['name_ar'] ?? "غير معروف";
   // String dateTime = appointment['d_start'] ?? "غير محدد";
     return GestureDetector(
@@ -340,25 +341,10 @@ Future<void> fetchAppointments() async {
                 
                                 Text(doctorName),
 
-                // Text(clinicName),
-                // Text(appointment['doctor_name'] ?? "اسم الطبيب"),
               ],
             ),
             Divider(height: 25),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //   children: [
-            //     Row(
-            //       children: [
-            //         Icon(Icons.access_time),
-            //         SizedBox(width: 5),
-            //         Text(dateTime)
-            //       //  Text("${appointment['appointment_date']} | ${appointment['time']}")
-            //       ],
-            //     ),
-            //     Icon(Icons.info_outline),
-            //   ],
-            // ),
+      
           ],
         ),
       ),
