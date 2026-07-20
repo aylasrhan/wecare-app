@@ -4,6 +4,7 @@ import 'package:wecare/features/auth/login/presentation/cubit/auth_bloc.dart';
 import 'package:wecare/features/auth/login/presentation/cubit/auth_event.dart';
 import 'package:wecare/features/auth/login/presentation/cubit/auth_state.dart';
 import 'package:wecare/features/auth/sign_up/presentation/ui/view/sign_up.dart';
+import 'package:wecare/features/doctor/presentation/ui/view/doctor_today_appointments_screen.dart';
 import 'package:wecare/features/home/presentation/ui/view/home_screen.dart';
 
 class SignInPage extends StatelessWidget {
@@ -16,37 +17,67 @@ class SignInPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // BlocListener يستمع لتغيرات الحالة ويقوم برد فعل (مثل الانتقال للصفحة التالية)
     return BlocListener<AuthBloc, AuthState>(
-      // listener: (context, state) {
-      //   if (state is AuthSuccess) {
-      //     // هنا يتم الانتقال للهوم بعد نجاح تسجيل الدخول
-      //     Navigator.pushReplacement(
-      //       context,
-      //       MaterialPageRoute(builder: (context) => HomeScreenPage()),
-      //     );
-      //     ScaffoldMessenger.of(
-      //       context,
-      //     ).showSnackBar(SnackBar(content: Text("Login Successful!")));
-      //   } else if (state is AuthError) {
-      //     // إظهار رسالة خطأ إذا فشل الدخول
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-      //     );
-      //   }
-      // },
-      // في ملف SignInPage.dart داخل الـ listener
-// داخل SignInPage.dart
-listener: (context, state) {
+      listener: (context, state) {
   if (state is AuthSuccess) {
-    // الآن يمكنك الوصول للدور من خلال state.user.role
-    print("تم تسجيل الدخول بنجاح، الدور هو: ${state.user.role}");
+    // استخدم المتغير role المُمرر للصفحة مباشرة، أو افحص الاثنين لضمان الصحة
+    print("الدور المُمرر للصفحة هو: $role");
     
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreenPage()),
+    // التحقق بناءً على الدور المرسل أو الدور القادم من الـ state
+    if (role.toLowerCase() == 'doctor' || (state.user.role != null && state.user.role.toLowerCase() == 'doctor')) {
+      // توجيه الطبيب إلى صفحته الخاصة بالمواعيد
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => DoctorTodayAppointmentsScreen()),
+      );
+    } else {
+      // توجيه المريض إلى الصفحة الرئيسية الخاصة بالمريض
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreenPage()),
+      );
+    }
+  } else if (state is AuthError) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(state.message), backgroundColor: Colors.red),
     );
   }
-  // ...
 },
+//      listener: (context, state) {
+//   if (state is AuthSuccess) {
+//     // جلب الدور إما من الـ state القادم من السيرفر أو من المتغير المرسل للصفحة
+//     String userRole = state.user.role; // أو استخدام المتغير role الممرر للـ SignInPage
+
+//     if (userRole == 'doctor') {
+//       // توجيه الطبيب إلى صفحته الخاصة بالمواعيد
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (context) => DoctorTodayAppointmentsScreen()), // استبدلها بواجهة الطبيب لديك
+//       );
+//     } else {
+//       // توجيه المريض إلى الصفحة الرئيسية الخاصة بالمريض
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (context) => HomeScreenPage()), // صفحة المريض التي ذكرتها
+//       );
+//     }
+//   } else if (state is AuthError) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+//     );
+//   }
+// },
+// listener: (context, state) {
+//   if (state is AuthSuccess) {
+//     // الآن يمكنك الوصول للدور من خلال state.user.role
+//     print("تم تسجيل الدخول بنجاح، الدور هو: ${state.user.role}");
+    
+//     Navigator.pushReplacement(
+//       context,
+//       MaterialPageRoute(builder: (context) => HomeScreenPage()),
+//     );
+//   }
+//   // ...
+// },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(

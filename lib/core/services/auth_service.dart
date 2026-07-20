@@ -15,23 +15,7 @@ class AuthService {
 //     body: {'email': email, 'password': password},
 //   );
   
-//   final data = json.decode(response.body);
-  
-//   if (response.statusCode == 200) {
-//     // التعديل هنا: السيرفر يرسل 'user_token' وليس 'token'
-//     // ويجب أن نستخدم نفس المفتاح عند الحفظ في SharedPreferences
-//     if (data.containsKey('user_token')) { 
-//       SharedPreferences prefs = await SharedPreferences.getInstance();
-//       await prefs.setString('user_token', data['user_token']); // تأكدي أننا نأخذ القيمة من 'user_token'
-//       print("تم حفظ التوكين بنجاح: ${data['user_token']}");
-//     } else {
-//       print("خطأ: السيرفر لم يرسل مفتاح 'user_token'. الرد كان: $data");
-//     }
-//     return UserModel.fromJson(data);
-//   } else {
-//     throw Exception(data['message'] ?? 'Failed to login');
-//   }
-// }
+
 Future<UserModel> login(String email, String password) async {
   final response = await http.post(
     Uri.parse('${baseUrl}Api_login'),
@@ -64,65 +48,7 @@ Future<UserModel> login(String email, String password) async {
   }
 }
  
-//   Future<Map<String, dynamic>> register({
-//   required String name,
-//   required String email,
-//   required String password,
-//   required String passwordConfirmation,
-//   required String motherName,
-//   required String mobile,
-//   required String birthDate,
-//   required String sex,
-//   required String blood,
-//   required String city,
-//   required String nationality,
-//   required String address,
-//   required String role,
-// }) async {
-//   final response = await http.post(
-//     Uri.parse('${baseUrl}register'),
-//     body: {
-//       'name': name,
-//       'email': email,
-//       'password': password,
-//       'c_password': passwordConfirmation,
-//       'mother_name': motherName,
-//       'mobile': mobile,
-//       'birth_date': birthDate,
-//       'sex': sex,
-//       'blood': blood,
-//       'p_city': city,
-//       'nationality': nationality,
-//       'address': address,
-//       'roles_name': role,
-//     },
-//   );
 
-//   print("Register Status: ${response.statusCode}");
-//   print("Register Body: ${response.body}");
-
-//   final data = json.decode(response.body);
-
-//   if (response.statusCode == 200 || response.statusCode == 201) {
-//     // التحقق من وجود التوكين في الاستجابة وحفظه
-//     // نستخدم data['user_token'] بناءً على ما يرجعه الكنترولر لديك
-//     if (data.containsKey('user_token')) {
-//       SharedPreferences prefs = await SharedPreferences.getInstance();
-//       await prefs.setString('user_token', data['user_token']);
-//       await prefs.setString('roles_name', role);
-//       print("تم حفظ التوكين بنجاح: ${data['user_token']}");
-//     }
-    
-//     return data;
-//   } else {
-//     // معالجة الأخطاء إذا كانت تأتي داخل مصفوفة errors
-//     String errorMessage = data['message'] ?? 'Failed to register';
-//     if (data.containsKey('errors')) {
-//       errorMessage = data['errors'].toString();
-//     }
-//     throw Exception(errorMessage);
-//   }
-// }
 Future<Map<String, dynamic>> register({
   required String name,
   required String email,
@@ -358,6 +284,31 @@ Future<List<VisitModel>> getVisits() async {
     return visitsData.map((item) => VisitModel.fromJson(item)).toList();
   } else {
     throw Exception('فشل جلب الزيارات');
+  }
+}
+
+
+// اضافة مؤقتة
+Future<List<dynamic>> getDoctorTodayAppointments() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token');
+
+  final response = await http.get(
+    Uri.parse('${baseUrl}doctor-today-appointments'),
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+  );
+
+  print("Doctor Today Appointments: ${response.body}");
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    // بناءً على كود لارافل، البيانات تعود داخل المفتاح 'Appointments' أو 'data'
+    return data['Appointments'] ?? []; 
+  } else {
+    throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
   }
 }
 }
