@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart'; // لا تنسي عمل import
 import 'package:wecare/core/services/auth_service.dart';
 import 'package:wecare/features/auth/login/presentation/cubit/auth_bloc.dart';
 import 'package:wecare/features/doctor/presentation/ui/view/doctor_appointments_screen.dart';
+import 'package:wecare/features/onboarding/presentation/ui/view/onboarding_screen.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -17,7 +19,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'WeCare',
-        home: DoctorAppointmentsScreen(),
+        home: OnboardingPage (),
       ),
     );
   }

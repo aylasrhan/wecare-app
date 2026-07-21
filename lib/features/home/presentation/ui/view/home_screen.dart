@@ -63,8 +63,9 @@ class _HomePageContentState extends State<HomePageContent> {
   List famousDoctors = [];
   List clinics = [];
   bool isLoading = true;
-  final String baseUrl = "http://10.0.2.2:8000/api";
-List upcomingAppointments = [];
+  final String baseUrl =
+      "'http://10.0.2.2:8000/api";
+  List upcomingAppointments = [];
   @override
   void initState() {
     super.initState();
@@ -72,24 +73,27 @@ List upcomingAppointments = [];
     fetchFamousDoctors();
     fetchAppointments();
   }
-// في ملف الـ Home
-Future<void> fetchAppointments() async {
-  try {
-    // إنشاء كائن من AuthService
-    AuthService authService = AuthService();
-    
-    // استدعاء الدالة الصحيحة التي كتبناها في الـ AuthService
-    List<dynamic> appointments = await authService.getPatientAppointments();
-    
-    setState(() {
-      upcomingAppointments = appointments; // الآن هذه القائمة ستحتوي على البيانات الصحيحة
-      print("عدد المواعيد التي وصلت من السيرفر: ${upcomingAppointments.length}");
-    });
-  } catch (e) {
-    print("Error fetching appointments: $e");
-  }
-}
 
+  // في ملف الـ Home
+  Future<void> fetchAppointments() async {
+    try {
+      // إنشاء كائن من AuthService
+      AuthService authService = AuthService();
+
+      // استدعاء الدالة الصحيحة التي كتبناها في الـ AuthService
+      List<dynamic> appointments = await authService.getPatientAppointments();
+
+      setState(() {
+        upcomingAppointments =
+            appointments; // الآن هذه القائمة ستحتوي على البيانات الصحيحة
+        print(
+          "عدد المواعيد التي وصلت من السيرفر: ${upcomingAppointments.length}",
+        );
+      });
+    } catch (e) {
+      print("Error fetching appointments: $e");
+    }
+  }
 
   Future<String?> getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -128,6 +132,7 @@ Future<void> fetchAppointments() async {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
@@ -224,14 +229,17 @@ Future<void> fetchAppointments() async {
             ),
             SizedBox(height: 15),
             // _buildAppointmentCard(context,upcomingAppointments[index]),
-           upcomingAppointments.isEmpty 
-  ? Text("لا توجد مواعيد قادمة") 
-  : ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: upcomingAppointments.length,
-      itemBuilder: (context, index) => _buildAppointmentCard(context, upcomingAppointments[index]),
-    ),
+            upcomingAppointments.isEmpty
+                ? Text("لا توجد مواعيد قادمة")
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: upcomingAppointments.length,
+                    itemBuilder: (context, index) => _buildAppointmentCard(
+                      context,
+                      upcomingAppointments[index],
+                    ),
+                  ),
             SizedBox(height: 20),
           ],
         ),
@@ -315,11 +323,12 @@ Future<void> fetchAppointments() async {
     );
   }
 
-  Widget _buildAppointmentCard(BuildContext context,dynamic appointment) {
+  Widget _buildAppointmentCard(BuildContext context, dynamic appointment) {
     // String doctorName = appointment['doctor_name'] ?? "غير معروف";
-    String doctorName = appointment['doctor_name']?.toString() ?? "طبيب غير معروف";
+    String doctorName =
+        appointment['doctor_name']?.toString() ?? "طبيب غير معروف";
     // String clinicName = appointment['gnr_m_clinics']?['name_ar'] ?? "غير معروف";
-  // String dateTime = appointment['d_start'] ?? "غير محدد";
+    // String dateTime = appointment['d_start'] ?? "غير محدد";
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -338,13 +347,11 @@ Future<void> fetchAppointments() async {
               children: [
                 CircleAvatar(radius: 25, child: Icon(Icons.person)),
                 SizedBox(width: 15),
-                
-                                Text(doctorName),
 
+                Text(doctorName),
               ],
             ),
             Divider(height: 25),
-      
           ],
         ),
       ),
