@@ -1,4 +1,60 @@
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:wecare/core/services/auth_service.dart';
+// import 'package:wecare/features/home/presentation/ui/view/appointments_page.dart';
+// import 'package:wecare/features/home/presentation/ui/view/details_eyes.dart';
+// import 'package:wecare/features/home/presentation/ui/view/doctor_profile_screen.dart';
+// import 'package:wecare/features/home/presentation/ui/view/medical_screen.dart';
+// import 'package:wecare/features/home/presentation/ui/view/more_screen.dart';
+// import 'package:wecare/features/home/presentation/ui/view/search_result_page.dart';
+// import 'package:wecare/features/home/presentation/ui/view/visit_screen.dart';
+// import 'package:wecare/model/doctor_model.dart';
+
+// class HomeScreenPage extends StatefulWidget {
+//   @override
+//   State<HomeScreenPage> createState() => _HomeScreenPageState();
+// }
+
+// class _HomeScreenPageState extends State<HomeScreenPage> {
+//   int _currentIndex = 0;
+//   final List<Widget> _pages = [
+//     HomePageContent(),
+//     VisitsPage(),
+//     MedicalPage(),
+//     MorePage(),
+//   ];
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.white,
+//       body: _pages[_currentIndex],
+//       bottomNavigationBar: BottomNavigationBar(
+//         type: BottomNavigationBarType.fixed,
+//         selectedItemColor: Color(0xFF1E1E66),
+//         unselectedItemColor: Colors.grey,
+//         currentIndex: _currentIndex,
+//         onTap: (index) => setState(() => _currentIndex = index),
+//         items: [
+//           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.calendar_month),
+//             label: "Visits",
+//           ),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.medical_services),
+//             label: "Medical",
+//           ),
+//           BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: "More"),
+//         ],
+//       ),
+//     );
+//   }
+// }
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,31 +69,44 @@ import 'package:wecare/features/home/presentation/ui/view/visit_screen.dart';
 import 'package:wecare/model/doctor_model.dart';
 
 class HomeScreenPage extends StatefulWidget {
+  const HomeScreenPage({super.key});
+
   @override
   State<HomeScreenPage> createState() => _HomeScreenPageState();
 }
 
 class _HomeScreenPageState extends State<HomeScreenPage> {
   int _currentIndex = 0;
-  final List<Widget> _pages = [
-    HomePageContent(),
-    VisitsPage(),
-    MedicalPage(),
-    MorePage(),
-  ];
+  
+  // نقل القوائم لتكون داخل الـ State لضمان استقرار البناء
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomePageContent(),
+      VisitsPage(),
+      MedicalPage(),
+      MorePage(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _pages[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Color(0xFF1E1E66),
+        selectedItemColor: const Color(0xFF1E1E66),
         unselectedItemColor: Colors.grey,
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_month),
@@ -53,7 +122,6 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
     );
   }
 }
-
 class HomePageContent extends StatefulWidget {
   @override
   State<HomePageContent> createState() => _HomePageContentState();
