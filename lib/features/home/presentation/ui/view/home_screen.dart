@@ -1,58 +1,4 @@
-// import 'dart:convert';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:wecare/core/services/auth_service.dart';
-// import 'package:wecare/features/home/presentation/ui/view/appointments_page.dart';
-// import 'package:wecare/features/home/presentation/ui/view/details_eyes.dart';
-// import 'package:wecare/features/home/presentation/ui/view/doctor_profile_screen.dart';
-// import 'package:wecare/features/home/presentation/ui/view/medical_screen.dart';
-// import 'package:wecare/features/home/presentation/ui/view/more_screen.dart';
-// import 'package:wecare/features/home/presentation/ui/view/search_result_page.dart';
-// import 'package:wecare/features/home/presentation/ui/view/visit_screen.dart';
-// import 'package:wecare/model/doctor_model.dart';
 
-// class HomeScreenPage extends StatefulWidget {
-//   @override
-//   State<HomeScreenPage> createState() => _HomeScreenPageState();
-// }
-
-// class _HomeScreenPageState extends State<HomeScreenPage> {
-//   int _currentIndex = 0;
-//   final List<Widget> _pages = [
-//     HomePageContent(),
-//     VisitsPage(),
-//     MedicalPage(),
-//     MorePage(),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       body: _pages[_currentIndex],
-//       bottomNavigationBar: BottomNavigationBar(
-//         type: BottomNavigationBarType.fixed,
-//         selectedItemColor: Color(0xFF1E1E66),
-//         unselectedItemColor: Colors.grey,
-//         currentIndex: _currentIndex,
-//         onTap: (index) => setState(() => _currentIndex = index),
-//         items: [
-//           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.calendar_month),
-//             label: "Visits",
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.medical_services),
-//             label: "Medical",
-//           ),
-//           BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: "More"),
-//         ],
-//       ),
-//     );
-//   }
-// }
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -383,39 +329,80 @@ Future<void> fetchAppointments() async {
     );
   }
 
-  Widget _buildAppointmentCard(BuildContext context,dynamic appointment) {
-    // String doctorName = appointment['doctor_name'] ?? "غير معروف";
-    String doctorName = appointment['doctor_name']?.toString() ?? "طبيب غير معروف";
-    // String clinicName = appointment['gnr_m_clinics']?['name_ar'] ?? "غير معروف";
-  // String dateTime = appointment['d_start'] ?? "غير محدد";
-    return GestureDetector(
-      onTap: () => Navigator.push(
+ 
+Widget _buildAppointmentCard(BuildContext context, dynamic appointment) {
+  // 1. جلب اسم الطبيب ديناميكياً
+  String doctorName = "طبيب غير محدد";
+  if (appointment['doctor'] != null && appointment['doctor']['name'] != null) {
+    doctorName = appointment['doctor']['name'];
+  } else if (appointment['doctor_name'] != null) {
+    doctorName = appointment['doctor_name'];
+  }
+
+  // 2. جلب التاريخ والوقت ديناميكياً مع دعم جميع أسماء الحقول المحتملة من السيرفر
+  String appointmentDate = appointment['appointment_date']?.toString() ?? "";
+  
+  String appointmentTime = appointment['time']?.toString() ?? 
+                          appointment['available_slot']?.toString() ?? 
+                          appointment['available_time']?.toString() ?? "";
+  
+  // دمج التاريخ والوقت لتنسيق العرض
+  String fullDateTime = "$appointmentDate  $appointmentTime".trim();
+  if (fullDateTime.isEmpty) {
+    fullDateTime = "موعد قادم";
+  }
+
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => AppointmentsPage()),
+      );
+    },
+    child: Container(
+      padding: const EdgeInsets.all(15),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
       ),
-      child: Container(
-        padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
-        ),
-        child: Column(
-          children: [
-            Row(
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 25,
+            backgroundColor: Color(0xFFE8EAF6),
+            child: Icon(Icons.person, color: Color(0xFF1E1E66)),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(radius: 25, child: Icon(Icons.person)),
-                SizedBox(width: 15),
-                
-                                Text(doctorName),
-
+                // اسم الطبيب
+                Text(
+                  doctorName,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 6),
+                // تاريخ ووقت الموعد
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_today, size: 14, color: Color(0xFF1E1E66)),
+                    const SizedBox(width: 6),
+                    Text(
+                      fullDateTime,
+                      style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
               ],
             ),
-            Divider(height: 25),
-      
-          ],
-        ),
+          ),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
