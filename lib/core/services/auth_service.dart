@@ -9,13 +9,74 @@ import 'package:wecare/model/visit_model.dart';
 class AuthService {
   final String baseUrl = "http://10.0.2.2:8000/api/";
 
-//   Future<UserModel> login(String email, String password) async {
-//   final response = await http.post(
-//     Uri.parse('${baseUrl}Api_login'),
-//     body: {'email': email, 'password': password},
-//   );
+
   
 
+// Future<bool> bookAppointment({
+//   required int doctorId,
+//   required String date,
+//   required String time,
+// }) async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   String? token = prefs.getString('user_token'); 
+
+//   final response = await http.post(
+//     Uri.parse('${baseUrl}appointment-store'), 
+//     headers: {
+//       'Authorization': 'Bearer $token',
+//       'Accept': 'application/json',
+//     },
+//     body: {
+//       'appointment_with': doctorId.toString(),
+//       'appointment_date': date,
+//       'time': time, // ✅ التعديل هنا: إرجاع المفتاح إلى 'time' ليتطابق مع الـ Validator في Laravel
+//     },
+//   );
+
+//   print("Book Status: ${response.statusCode}");
+//   print("Book Response: ${response.body}");
+
+//   if (response.statusCode == 200 || response.statusCode == 201) {
+//     final data = jsonDecode(response.body);
+//     if (data['success'] == true) {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
+Future<bool> bookAppointment({
+  required int doctorId,
+  required String date,
+  required String time,
+}) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('user_token'); 
+
+  final response = await http.post(
+    Uri.parse('${baseUrl}appointment-store'), 
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    },
+    body: {
+      'appointment_with': doctorId.toString(),
+      'appointment_date': date,
+      'available_slot': time,
+      // 'time': time, // ✅ المفتاح الصحيح المطابق للعمود في قاعدة البيانات و الـ Rules
+    },
+  );
+
+  print("Book Status: ${response.statusCode}");
+  print("Book Response: ${response.body}");
+
+  if (response.statusCode == 200 || response.statusCode == 201) {
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) {
+      return true;
+    }
+  }
+  return false;
+}
 Future<UserModel> login(String email, String password) async {
   final response = await http.post(
     Uri.parse('${baseUrl}Api_login'),
@@ -222,32 +283,12 @@ Future<List<Doctor>> getDoctors(int subgrp) async {
     throw Exception('فشل الاتصال: ${response.statusCode}');
   }
 }
-Future<List<dynamic>> getUpcomingAppointments() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? token = prefs.getString('user_token');
-
-  final response = await http.get(
-Uri.parse('${baseUrl}patient-appointments'),    headers: {
-      'Authorization': 'Bearer $token',
-      'Accept': 'application/json',
-    },
-  );
-
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    return data['upcoming_Appointment'] ?? []; // البيانات الحقيقية من السيرفر
-  } else {
-  // هذا السطر سيخبركِ بالضبط لماذا فشل الطلب (مثلاً 404 أو 500)
-  throw Exception('فشل جلب المواعيد: ${response.statusCode} - ${response.body}');
-}
-}
 
 Future<List<dynamic>> getPatientAppointments() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('user_token');
 
   final response = await http.get(
-    // الرابط يجب أن يطابق ما هو موجود في api.php حرفياً
     Uri.parse('${baseUrl}patient-appointments'), 
     headers: {
       'Authorization': 'Bearer $token',
@@ -255,15 +296,25 @@ Future<List<dynamic>> getPatientAppointments() async {
     },
   );
 
-  if (response.statusCode == 200) {
+  print("Patient Appointments Status: ${response.statusCode}");
+  print("Patient Appointments Body: ${response.body}");
+
+  if (response.statusCode == 200 || response.statusCode == 201) {
     final Map<String, dynamic> data = json.decode(response.body);
 
-    print("DEBUG JSON: ${data['upcoming_Appointment']}");
-    // تأكدي أن المفتاح في الـ JSON هو فعلاً 'upcoming_Appointment'
-    return data['upcoming_Appointment'] ?? [];
-  } else {
-    throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
+    // فحص جميع المفاتيح المحتملة التي قد ترجعها لارافل
+    if (data.containsKey('upcoming_Appointment')) {
+      return data['upcoming_Appointment'] ?? [];
+    } else if (data.containsKey('upcoming_appointments')) {
+      return data['upcoming_appointments'] ?? [];
+    } else if (data.containsKey('data')) {
+      return data['data'] ?? [];
+    } else if (data.containsKey('appointments')) {
+      return data['appointments'] ?? [];
+    }
   }
+  
+  return [];
 }
 Future<List<VisitModel>> getVisits() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();

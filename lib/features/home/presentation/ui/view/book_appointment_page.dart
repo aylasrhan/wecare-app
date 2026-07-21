@@ -1,7 +1,17 @@
+
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart'; // لجلب الـ Token
+import 'package:wecare/core/services/auth_service.dart';
+import 'package:wecare/features/home/presentation/ui/view/home_screen.dart';
 
 class BookAppointmentPage extends StatefulWidget {
+  final dynamic doctor; // 1. إضافة متغير لاستقبال بيانات الطبيب المختار
+
+  const BookAppointmentPage({Key? key, this.doctor}) : super(key: key);
+
   @override
   _BookAppointmentPageState createState() => _BookAppointmentPageState();
 }
@@ -10,23 +20,91 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   String? _selectedTime;
+  bool _isLoading = false; // لمؤشر التحميل عند الضغط على الزر
 
-  final List<String> times = ["18:50", "19:05", "19:35", "19:50", "20:20", "20:35"];
+  final List<String> times = [
+    "18:50",
+    "19:05",
+    "19:35",
+    "19:50",
+    "20:20",
+    "20:35",
+  ];
+
+  // دالة إرسال الموعد لقاعدة البيانات في Laravel
+  Future<bool> _bookAppointment() async {
+    setState(() => _isLoading = true);
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token'); // جلب توكين المستخدم المسجل
+
+      // تنسيق التاريخ بالشكل المتوافق مع الداتابيز (YYYY-MM-DD)
+      String formattedDate =
+          "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}";
+
+      // استخراج معرّف الطبيب من الكائن المُمرر
+      int doctorId = widget.doctor != null ? widget.doctor['id'] : 1;
+
+      // ⚠️ قم بتعديل الرابط ليطابق مسار API الحجز عندك في Laravel
+      final response = await http.post(
+        Uri.parse('https://your-domain.com/api/book-appointment'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'doctor_id': doctorId,
+          'appointment_date': formattedDate,
+          'time': _selectedTime,
+        }),
+      );
+
+      setState(() => _isLoading = false);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        print("Error response: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      print("Exception while booking: $e");
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Book Appointment"), elevation: 0, backgroundColor: Colors.white, foregroundColor: Colors.black),
+      appBar: AppBar(
+        title: const Text("Book Appointment"),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Select Date", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            // تنسيق التقويم ليشبه الصورة
+            const Text(
+              "Select Date",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            // التقويم
             Container(
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black12, blurRadius: 10),
+                ],
+              ),
               child: TableCalendar(
                 firstDay: DateTime.utc(2025, 1, 1),
                 lastDay: DateTime.utc(2027, 12, 31),
@@ -40,58 +118,123 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
                   });
                 },
                 calendarStyle: CalendarStyle(
-                  selectedDecoration: BoxDecoration(color: Color(0xFF5C6BC0), shape: BoxShape.circle),
-                  todayDecoration: BoxDecoration(color: Colors.blue.withOpacity(0.3), shape: BoxShape.circle),
+                  selectedDecoration: const BoxDecoration(
+                    color: Color(0xFF5C6BC0),
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
             ),
-            
-            SizedBox(height: 20),
-            Text("Select Hour", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 15),
-            
-            Wrap(
-              spacing: 10, runSpacing: 10,
-              children: times.map((time) => ChoiceChip(
-                label: Text(time, style: TextStyle(color: _selectedTime == time ? Colors.white : Colors.black)),
-                selected: _selectedTime == time,
-                selectedColor: Color(0xFF4FC3F7), // لون الأزرق الفاتح عند الاختيار
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: Colors.blueGrey)),
-                onSelected: (selected) => setState(() => _selectedTime = time),
-              )).toList(),
+
+            const SizedBox(height: 20),
+            const Text(
+              "Select Hour",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            
-            SizedBox(height: 30),
-            
-            // زر Next غير ممتد (بناءً على طلبك)
+            const SizedBox(height: 15),
+
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: times
+                  .map(
+                    (time) => ChoiceChip(
+                      label: Text(
+                        time,
+                        style: TextStyle(
+                          color: _selectedTime == time
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                      selected: _selectedTime == time,
+                      selectedColor: const Color(0xFF4FC3F7),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        side: const BorderSide(color: Colors.blueGrey),
+                      ),
+                      onSelected: (selected) =>
+                          setState(() => _selectedTime = time),
+                    ),
+                  )
+                  .toList(),
+            ),
+
+            const SizedBox(height: 30),
+
+            // زر Next
             Center(
               child: SizedBox(
-                width: 250, // عرض محدد للزر
+                width: 250,
                 height: 50,
                 child: ElevatedButton(
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Color(0xFF1A237E),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-  ),
-  onPressed: () {
-    // 1. هنا يفضل إضافة كود إرسال البيانات لقاعدة البيانات (Firebase)
-    
-    // 2. إظهار رسالة النجاح
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A237E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                 
+
+                  
+
+onPressed: () async {
+  if (_selectedDay == null || _selectedTime == null) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
+        content: Text("الرجاء اختيار التاريخ والوقت أولاً"),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+
+  // تنسيق التاريخ للشكل YYYY-MM-DD
+  String formattedDate =
+      "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}";
+
+  // استدعاء API الحجز الحقيقي
+  bool isSuccess = await AuthService().bookAppointment(
+    doctorId: widget.doctor.id,
+    date: formattedDate,
+    time: _selectedTime!,
+  );
+
+  if (isSuccess) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
         content: Text("Appointment Successfully"),
         backgroundColor: Colors.green,
         duration: Duration(seconds: 2),
       ),
     );
-
-    // 3. العودة لصفحة بروفايل الطبيب
-    // Navigator.pop تعود للصفحة السابقة في التاريخ (وهي البروفايل)
-    Navigator.pop(context);
-  },
-  child: Text("Next", style: TextStyle(fontSize: 18, color: Colors.white)),
-),
+    // الانتقال للصفحة الرئيسية وتجديد البيانات
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreenPage()),
+      (route) => false,
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("فشل في حفظ الموعد، حاول مرة أخرى"),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+},
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          "Next",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                ),
               ),
             ),
           ],
