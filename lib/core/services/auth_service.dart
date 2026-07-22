@@ -10,40 +10,7 @@ class AuthService {
   final String baseUrl = "http://10.0.2.2:8000/api/";
 
 
-  
 
-// Future<bool> bookAppointment({
-//   required int doctorId,
-//   required String date,
-//   required String time,
-// }) async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   String? token = prefs.getString('user_token'); 
-
-//   final response = await http.post(
-//     Uri.parse('${baseUrl}appointment-store'), 
-//     headers: {
-//       'Authorization': 'Bearer $token',
-//       'Accept': 'application/json',
-//     },
-//     body: {
-//       'appointment_with': doctorId.toString(),
-//       'appointment_date': date,
-//       'time': time, // ✅ التعديل هنا: إرجاع المفتاح إلى 'time' ليتطابق مع الـ Validator في Laravel
-//     },
-//   );
-
-//   print("Book Status: ${response.statusCode}");
-//   print("Book Response: ${response.body}");
-
-//   if (response.statusCode == 200 || response.statusCode == 201) {
-//     final data = jsonDecode(response.body);
-//     if (data['success'] == true) {
-//       return true;
-//     }
-//   }
-//   return false;
-// }
 Future<bool> bookAppointment({
   required int doctorId,
   required String date,
