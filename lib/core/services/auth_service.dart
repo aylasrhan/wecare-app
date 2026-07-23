@@ -75,7 +75,24 @@ Future<UserModel> login(String email, String password) async {
     throw Exception(responseData['message'] ?? 'Failed to login');
   }
 }
- 
+ Future<Map<String, dynamic>> getUserProfile() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('user_token');
+
+    final response = await http.get(
+      Uri.parse('${baseUrl}profile'), 
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('فشل جلب بيانات الملف الشخصي: ${response.statusCode}');
+    }
+  }
 
 Future<Map<String, dynamic>> register({
   required String name,
