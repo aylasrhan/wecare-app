@@ -27,7 +27,7 @@ class SignInPage extends StatelessWidget {
       // توجيه الطبيب إلى صفحته الخاصة بالمواعيد
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => DoctorTodayAppointmentsScreen()),
+        MaterialPageRoute(builder: (context) => DoctorAppointmentsScreen()),
       );
     } else {
       // توجيه المريض إلى الصفحة الرئيسية الخاصة بالمريض
