@@ -196,11 +196,18 @@ Future<UserModel> login(String email, String password) async {
     if (data != null && data is Map) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       
-      // 1. حفظ التوكين
+      // // 1. حفظ التوكين
+      // if (data.containsKey('user_token')) { 
+      //   // وحدنا الاسم هنا ليصبح 'token' ليعمل بشكل صحيح مع باقي التطبيق
+      //   await prefs.setString('token', data['user_token']);
+      //   print("تم حفظ التوكين بنجاح");
+      // }
+      // 1. حفظ التوكين بالاسمين معاً لضمان توافقه مع كل الدوال
       if (data.containsKey('user_token')) { 
-        // وحدنا الاسم هنا ليصبح 'token' ليعمل بشكل صحيح مع باقي التطبيق
-        await prefs.setString('token', data['user_token']);
-        print("تم حفظ التوكين بنجاح");
+        String tokenValue = data['user_token'];
+        await prefs.setString('token', tokenValue);      // لأجل شاشات الطبيب
+        await prefs.setString('user_token', tokenValue); // لأجل شاشات المريض وباقي التطبيق
+        print("تم حفظ التوكين بنجاح بالاسمين");
       }
       
       // 2. حفظ الدور (roles_name)
@@ -469,9 +476,40 @@ Future<List<VisitModel>> getVisits() async {
 
 
 // اضافة مؤقتة
+// Future<List<dynamic>> getDoctorTodayAppointments() async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   String? token = prefs.getString('user_token');
+
+//   final response = await http.get(
+//     Uri.parse('${baseUrl}doctor-today-appointments'),
+//     headers: {
+//       'Authorization': 'Bearer $token',
+//       'Accept': 'application/json',
+//     },
+//   );
+
+//   print("Doctor Today Appointments: ${response.body}");
+
+//   if (response.statusCode == 200) {
+//     final data = json.decode(response.body);
+//     // بناءً على كود لارافل، البيانات تعود داخل المفتاح 'Appointments' أو 'data'
+//     return data['Appointments'] ?? []; 
+//   } else {
+//     throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
+//   }
+// }
+// اضافة مؤقتة
 Future<List<dynamic>> getDoctorTodayAppointments() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? token = prefs.getString('user_token');
+  
+  // 🔴 التعديل 1: قراءة التوكن بالاسم الصحيح 'token'
+  String? token = prefs.getString('token'); 
+
+  // 🔴 التعديل 2: حماية التطبيق من إرسال null للسيرفر
+  if (token == null) {
+    print("🚨 تنبيه: التوكن غير موجود في الذاكرة! يرجى تسجيل الدخول.");
+    throw Exception('غير مصرح لك، يرجى تسجيل الدخول من جديد.');
+  }
 
   final response = await http.get(
     Uri.parse('${baseUrl}doctor-today-appointments'),
