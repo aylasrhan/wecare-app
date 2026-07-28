@@ -21,7 +21,7 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
   DateTime? _selectedDay;
   String? _selectedTime;
   bool _isLoading = false; // لمؤشر التحميل عند الضغط على الزر
-
+List<String> _bookedTimes = [];
   final List<String> times = [
     "18:50",
     "19:05",
@@ -111,11 +111,21 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
                 focusedDay: _focusedDay,
                 calendarFormat: CalendarFormat.month,
                 selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                onDaySelected: (selectedDay, focusedDay) {
+                onDaySelected: (selectedDay, focusedDay)async {
                   setState(() {
                     _selectedDay = selectedDay;
                     _focusedDay = focusedDay;
+                    _selectedTime = null; // تفريغ الوقت المختار القديم
+    _bookedTimes = [];
                   });
+                  String formattedDate = "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
+  
+  // استدعاء الأوقات المحجوزة من السيرفر
+  List<String> booked = await AuthService().getBookedTimes(widget.doctor.id, formattedDate);
+  
+  setState(() {
+    _bookedTimes = booked; // تحديث الواجهة بالأوقات المحجوزة الجديدة
+  });
                 },
                 calendarStyle: CalendarStyle(
                   selectedDecoration: const BoxDecoration(
@@ -140,29 +150,61 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
             Wrap(
               spacing: 10,
               runSpacing: 10,
-              children: times
-                  .map(
-                    (time) => ChoiceChip(
-                      label: Text(
-                        time,
-                        style: TextStyle(
-                          color: _selectedTime == time
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                      ),
-                      selected: _selectedTime == time,
-                      selectedColor: const Color(0xFF4FC3F7),
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        side: const BorderSide(color: Colors.blueGrey),
-                      ),
-                      onSelected: (selected) =>
-                          setState(() => _selectedTime = time),
-                    ),
-                  )
-                  .toList(),
+              // children: times
+              //     .map(
+              //       (time) => ChoiceChip(
+              //         label: Text(
+              //           time,
+              //           style: TextStyle(
+              //             color: _selectedTime == time
+              //                 ? Colors.white
+              //                 : Colors.black,
+              //           ),
+              //         ),
+              //         selected: _selectedTime == time,
+              //         selectedColor: const Color(0xFF4FC3F7),
+              //         backgroundColor: Colors.white,
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(15),
+              //           side: const BorderSide(color: Colors.blueGrey),
+              //         ),
+              //         onSelected: (selected) =>
+              //             setState(() => _selectedTime = time),
+              //       ),
+              //     )
+              //     .toList(),
+              children: times.map((time) {
+  // فحص هل الوقت الحالي محجوز؟
+  bool isBooked = _bookedTimes.contains(time);
+
+  return ChoiceChip(
+    label: Text(
+      time,
+      style: TextStyle(
+        // إذا كان محجوزاً نجعله رمادي باهت، وإذا مختاراً نجعله أبيض، وإلا أسود
+        color: isBooked 
+            ? Colors.grey.shade500 
+            : (_selectedTime == time ? Colors.white : Colors.black),
+        // وضع خط شطب فوق الوقت المحجوز لمزيد من التوضيح (اختياري)
+        decoration: isBooked ? TextDecoration.lineThrough : null,
+      ),
+    ),
+    selected: _selectedTime == time && !isBooked,
+    selectedColor: const Color(0xFF4FC3F7),
+    // لون الخلفية رمادي باهت إذا محجوز
+    backgroundColor: isBooked ? Colors.grey.shade200 : Colors.white, 
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+      side: BorderSide(
+        color: isBooked ? Colors.transparent : Colors.blueGrey,
+      ),
+    ),
+    // 🔴 الأهم: تعطيل الضغط عبر إرجاع null إذا كان محجوزاً
+    onSelected: isBooked
+        ? null 
+        : (selected) => setState(() => _selectedTime = time),
+  );
+}).toList(),
             ),
 
             const SizedBox(height: 30),
@@ -180,54 +222,116 @@ class _BookAppointmentPageState extends State<BookAppointmentPage> {
                     ),
                   ),
                  
+onPressed: _isLoading 
+  ? null 
+  : () async {
+      if (_selectedDay == null || _selectedTime == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("الرجاء اختيار التاريخ والوقت أولاً"),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
 
-                  
+      // تشغيل مؤشر التحميل
+      setState(() {
+        _isLoading = true;
+      });
 
-onPressed: () async {
-  if (_selectedDay == null || _selectedTime == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("الرجاء اختيار التاريخ والوقت أولاً"),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
+      try {
+        // تنسيق التاريخ للشكل YYYY-MM-DD
+        String formattedDate =
+            "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}";
 
-  // تنسيق التاريخ للشكل YYYY-MM-DD
-  String formattedDate =
-      "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}";
+        // 🔴 التعديل هنا: رجعناها مثل الكود القديم الشغال تماماً
+        String result = await AuthService().bookAppointment(
+          doctorId: widget.doctor.id, 
+          date: formattedDate,
+          time: _selectedTime!,
+        );
 
-  // استدعاء API الحجز الحقيقي
-  bool isSuccess = await AuthService().bookAppointment(
-    doctorId: widget.doctor.id,
-    date: formattedDate,
-    time: _selectedTime!,
-  );
-
-  if (isSuccess) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Appointment Successfully"),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
-    );
-    // الانتقال للصفحة الرئيسية وتجديد البيانات
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreenPage()),
-      (route) => false,
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("فشل في حفظ الموعد، حاول مرة أخرى"),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
+        if (result == "success") {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("تم حجز الموعد بنجاح"),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          // الانتقال للصفحة الرئيسية وتجديد البيانات
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreenPage()),
+            (route) => false,
+          );
+        } else {
+          // سيقوم هنا بطباعة الخطأ القادم من السيرفر (مثلاً: الموعد محجوز مسبقاً)
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } catch (e) {
+        // طباعة الخطأ في حال حدوث مشكلة بالاتصال
+        print("Error: $e");
+      } finally {
+        // إيقاف مؤشر التحميل دائماً حتى لو حصل خطأ
+        setState(() {
+          _isLoading = false;
+        });
+      }
 },
+
+// onPressed: () async {
+//   if (_selectedDay == null || _selectedTime == null) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       const SnackBar(
+//         content: Text("الرجاء اختيار التاريخ والوقت أولاً"),
+//         backgroundColor: Colors.red,
+//       ),
+//     );
+//     return;
+//   }
+
+//   // تنسيق التاريخ للشكل YYYY-MM-DD
+//   String formattedDate =
+//       "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}";
+
+//   // استدعاء API الحجز الحقيقي
+//   bool isSuccess = await AuthService().bookAppointment(
+//     doctorId: widget.doctor.id,
+//     date: formattedDate,
+//     time: _selectedTime!,
+//   );
+
+//   if (isSuccess) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       const SnackBar(
+//         content: Text("Appointment Successfully"),
+//         backgroundColor: Colors.green,
+//         duration: Duration(seconds: 2),
+//       ),
+//     );
+//     // الانتقال للصفحة الرئيسية وتجديد البيانات
+//     Navigator.pushAndRemoveUntil(
+//       context,
+//       MaterialPageRoute(builder: (context) => HomeScreenPage()),
+//       (route) => false,
+//     );
+//   } else {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       const SnackBar(
+//         content: Text("فشل في حفظ الموعد، حاول مرة أخرى"),
+//         backgroundColor: Colors.red,
+//       ),
+//     );
+//   }
+// },
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
