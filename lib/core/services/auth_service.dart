@@ -11,39 +11,175 @@ class AuthService {
 
 
 
-Future<bool> bookAppointment({
+// Future<bool> bookAppointment({
+//   required int doctorId,
+//   required String date,
+//   required String time,
+// }) async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   String? token = prefs.getString('user_token'); 
+
+//   final response = await http.post(
+//     Uri.parse('${baseUrl}appointment-store'), 
+//     headers: {
+//       'Authorization': 'Bearer $token',
+//       'Accept': 'application/json',
+//     },
+//     body: {
+//       'appointment_with': doctorId.toString(),
+//       'appointment_date': date,
+//       'available_slot': time,
+//       // 'time': time, // ✅ المفتاح الصحيح المطابق للعمود في قاعدة البيانات و الـ Rules
+//     },
+//   );
+
+//   print("Book Status: ${response.statusCode}");
+//   print("Book Response: ${response.body}");
+
+//   if (response.statusCode == 200 || response.statusCode == 201) {
+//     final data = jsonDecode(response.body);
+//     if (data['success'] == true) {
+//       return true;
+//     }
+//   }
+//   return false;
+// }
+// Future<String> bookAppointment({
+//   required int doctorId,
+//   required String date,
+//   required String time,
+// }) async {
+//   try {
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+//     String? token = prefs.getString('user_token'); // أو حسب الاسم الذي تحفظ به التوكن
+
+//     final response = await http.post(
+//       Uri.parse('${baseUrl}appointment-store'),
+//       headers: {
+//         'Authorization': 'Bearer $token',
+//         'Accept': 'application/json',
+//       },
+//       body: {
+//         'appointment_with': doctorId.toString(),
+//         'appointment_date': date,
+//         'available_slot': time, 
+//       },
+//     );
+
+//     if (response.statusCode == 200 || response.statusCode == 201) {
+//       final data = jsonDecode(response.body);
+      
+//       if (data['success'] == true || data['error'] == "D00") {
+//         return "success"; // حالة النجاح
+//       } else if (data['error'] == "V01") {
+//         return data['msg']; // حالة الموعد المحجوز مسبقاً
+//       }
+//     }
+//     return "فشل في حفظ الموعد، الرجاء المحاولة مرة أخرى"; // أي خطأ آخر
+//   } catch (e) {
+//     return "حدث خطأ في الاتصال بالخادم";
+//   }
+// }
+Future<String> bookAppointment({
   required int doctorId,
   required String date,
   required String time,
 }) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? token = prefs.getString('user_token'); 
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token'); 
 
-  final response = await http.post(
-    Uri.parse('${baseUrl}appointment-store'), 
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Accept': 'application/json',
-    },
-    body: {
-      'appointment_with': doctorId.toString(),
-      'appointment_date': date,
-      'available_slot': time,
-      // 'time': time, // ✅ المفتاح الصحيح المطابق للعمود في قاعدة البيانات و الـ Rules
-    },
-  );
+    final response = await http.post(
+      Uri.parse('${baseUrl}appointment-store'), 
+      headers: {
+        'Content-Type': 'application/json', // 🔴 مهم جداً: إجبار لارافل على قراءة البيانات كـ JSON كما في كودك القديم
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+      // 🔴 نستخدم jsonEncode ونرسل كل المفاتيح المحتملة لضمان الحفظ
+      body: jsonEncode({
+        'appointment_with': doctorId, // يطلبه الـ Validator
+        'available_slot': time,       // يطلبه الـ Validator
+        'appointment_date': date,     // مطلوب في كل مكان
+        'doctor_id': doctorId,        // 💡 نرسله تحسباً لأن الداتابيز تطلبه
+        'time': time,                 // 💡 نرسله تحسباً لأن الداتابيز تطلبه
+      }),
+    );
 
-  print("Book Status: ${response.statusCode}");
-  print("Book Response: ${response.body}");
-
-  if (response.statusCode == 200 || response.statusCode == 201) {
-    final data = jsonDecode(response.body);
-    if (data['success'] == true) {
-      return true;
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      
+     if (data['success'] == true || data['error'] == "D00") {
+        return "success"; 
+      } else {
+        // سيقوم بعرض أي رسالة خطأ (مثل: محجوز مسبقاً، أو خطأ بالداتابيز)
+        return data['msg'] ?? "خطأ غير معروف في السيرفر"; 
+      }
     }
+return "خطأ في الاتصال: ${response.statusCode}";  } catch (e) {
+    return "حدث خطأ في الاتصال بالخادم";
   }
-  return false;
 }
+Future<List<String>> getBookedTimes(int doctorId, String date) async {
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    // تأكد من وضع الرابط الصحيح حسب ما سميته في ملف api.php
+    final response = await http.get(
+      Uri.parse('${baseUrl}booked-times?doctor_id=$doctorId&date=$date'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['status'] == 'success') {
+        // تحويل المصفوفة القادمة إلى List<String>
+        return List<String>.from(data['booked_times']);
+      }
+    }
+    return []; // إذا فشل نرجع قائمة فارغة
+  } catch (e) {
+    print("Error fetching booked times: $e");
+    return [];
+  }
+}
+
+
+// Future<UserModel> login(String email, String password) async {
+//   final response = await http.post(
+//     Uri.parse('${baseUrl}Api_login'),
+//     body: {'email': email, 'password': password},
+//   );
+  
+//   final responseData = json.decode(response.body);
+  
+//   if (response.statusCode == 200) {
+//     // الوصول إلى البيانات داخل مفتاح 'data' كما في اللارفل
+//     final data = responseData['data']; 
+    
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+//     // 1. حفظ التوكين
+//     if (data.containsKey('user_token')) { 
+//       await prefs.setString('user_token', data['user_token']);
+//       print("تم حفظ التوكين بنجاح");
+//     }
+    
+//     // 2. حفظ الدور (roles_name)
+//     if (data.containsKey('roles_name')) {
+//       await prefs.setString('roles_name', data['roles_name']);
+//       print("تم حفظ الدور: ${data['roles_name']}");
+//     }
+    
+//     return UserModel.fromJson(responseData);
+//   } else {
+//     throw Exception(responseData['message'] ?? 'Failed to login');
+//   }
+// }
 Future<UserModel> login(String email, String password) async {
   final response = await http.post(
     Uri.parse('${baseUrl}Api_login'),
@@ -53,24 +189,33 @@ Future<UserModel> login(String email, String password) async {
   final responseData = json.decode(response.body);
   
   if (response.statusCode == 200) {
-    // الوصول إلى البيانات داخل مفتاح 'data' كما في اللارفل
+    // الوصول إلى البيانات داخل مفتاح 'data'
     final data = responseData['data']; 
     
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    
-    // 1. حفظ التوكين
-    if (data.containsKey('user_token')) { 
-      await prefs.setString('user_token', data['user_token']);
-      print("تم حفظ التوكين بنجاح");
+    // 🔴 التعديل هنا: فحصنا أن الـ data موجودة وليست null
+    if (data != null && data is Map) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      
+      // 1. حفظ التوكين
+      if (data.containsKey('user_token')) { 
+        // وحدنا الاسم هنا ليصبح 'token' ليعمل بشكل صحيح مع باقي التطبيق
+        await prefs.setString('token', data['user_token']);
+        print("تم حفظ التوكين بنجاح");
+      }
+      
+      // 2. حفظ الدور (roles_name)
+      if (data.containsKey('roles_name')) {
+        await prefs.setString('roles_name', data['roles_name']);
+        print("تم حفظ الدور: ${data['roles_name']}");
+      }
+      
+      return UserModel.fromJson(responseData);
+    } else {
+      // إذا رد السيرفر بـ 200 ولكن الداتا كانت فارغة
+      print("🚨 البيانات القادمة من السيرفر فارغة! الرد بالكامل: $responseData");
+      throw Exception(responseData['message'] ?? 'بيانات الحساب غير موجودة');
     }
     
-    // 2. حفظ الدور (roles_name)
-    if (data.containsKey('roles_name')) {
-      await prefs.setString('roles_name', data['roles_name']);
-      print("تم حفظ الدور: ${data['roles_name']}");
-    }
-    
-    return UserModel.fromJson(responseData);
   } else {
     throw Exception(responseData['message'] ?? 'Failed to login');
   }
