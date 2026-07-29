@@ -11,75 +11,6 @@ class AuthService {
 
 
 
-// Future<bool> bookAppointment({
-//   required int doctorId,
-//   required String date,
-//   required String time,
-// }) async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   String? token = prefs.getString('user_token'); 
-
-//   final response = await http.post(
-//     Uri.parse('${baseUrl}appointment-store'), 
-//     headers: {
-//       'Authorization': 'Bearer $token',
-//       'Accept': 'application/json',
-//     },
-//     body: {
-//       'appointment_with': doctorId.toString(),
-//       'appointment_date': date,
-//       'available_slot': time,
-//       // 'time': time, // ✅ المفتاح الصحيح المطابق للعمود في قاعدة البيانات و الـ Rules
-//     },
-//   );
-
-//   print("Book Status: ${response.statusCode}");
-//   print("Book Response: ${response.body}");
-
-//   if (response.statusCode == 200 || response.statusCode == 201) {
-//     final data = jsonDecode(response.body);
-//     if (data['success'] == true) {
-//       return true;
-//     }
-//   }
-//   return false;
-// }
-// Future<String> bookAppointment({
-//   required int doctorId,
-//   required String date,
-//   required String time,
-// }) async {
-//   try {
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-//     String? token = prefs.getString('user_token'); // أو حسب الاسم الذي تحفظ به التوكن
-
-//     final response = await http.post(
-//       Uri.parse('${baseUrl}appointment-store'),
-//       headers: {
-//         'Authorization': 'Bearer $token',
-//         'Accept': 'application/json',
-//       },
-//       body: {
-//         'appointment_with': doctorId.toString(),
-//         'appointment_date': date,
-//         'available_slot': time, 
-//       },
-//     );
-
-//     if (response.statusCode == 200 || response.statusCode == 201) {
-//       final data = jsonDecode(response.body);
-      
-//       if (data['success'] == true || data['error'] == "D00") {
-//         return "success"; // حالة النجاح
-//       } else if (data['error'] == "V01") {
-//         return data['msg']; // حالة الموعد المحجوز مسبقاً
-//       }
-//     }
-//     return "فشل في حفظ الموعد، الرجاء المحاولة مرة أخرى"; // أي خطأ آخر
-//   } catch (e) {
-//     return "حدث خطأ في الاتصال بالخادم";
-//   }
-// }
 Future<String> bookAppointment({
   required int doctorId,
   required String date,
@@ -527,6 +458,89 @@ Future<List<dynamic>> getDoctorTodayAppointments() async {
     return data['Appointments'] ?? []; 
   } else {
     throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
+  }
+}
+
+
+//29 الشهر
+// دالة قبول الموعد من قبل الطبيب
+// Future<bool> acceptAppointment(int appointmentId) async {
+//   try {
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+//     String? token = prefs.getString('token') ?? prefs.getString('user_token');
+
+//     final response = await http.post(
+//       Uri.parse('${baseUrl}appointment/accept/$appointmentId'), // تأكدي من تطابق الرابط مع لارافل
+//       headers: {
+//         'Authorization': 'Bearer $token',
+//         'Accept': 'application/json',
+//       },
+//     );
+
+//     if (response.statusCode == 200) {
+//       final data = json.decode(response.body);
+//       return data['success'] == true || response.statusCode == 200;
+//     }
+//     return false;
+//   } catch (e) {
+//     print("Error accepting appointment: $e");
+//     return false;
+//   }
+// }
+
+Future<bool> acceptAppointment(int appointmentId) async {
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token') ?? prefs.getString('user_token');
+
+    final response = await http.post(
+      Uri.parse('${baseUrl}accept-appointment'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+      body: {
+        'appointment_id': appointmentId.toString(),
+      },
+    );
+
+    print("Accept Status: ${response.statusCode}");
+    print("Accept Body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['success'] == true;
+    }
+    return false;
+  } catch (e) {
+    print("Error accepting appointment: $e");
+    return false;
+  }
+}
+Future<bool> rejectAppointment(int appointmentId) async {
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token') ?? prefs.getString('user_token');
+
+    final response = await http.post(
+      Uri.parse('${baseUrl}reject-appointment'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+      body: {
+        'appointment_id': appointmentId.toString(),
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['success'] == true;
+    }
+    return false;
+  } catch (e) {
+    print("Error rejecting appointment: $e");
+    return false;
   }
 }
 }
