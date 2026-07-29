@@ -30,7 +30,8 @@ Future<void> fetchVisits() async {
 
   try {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/visits'), // تأكدي من هذا الرابط
+      Uri.parse('http://10.0.2.2:8000/api/pat_visits'), // 🔴 تعديل الرابط هنا ليصبح pat_visits
+      // Uri.parse('http://10.0.2.2:8000/api/visits'), // تأكدي من هذا الرابط
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',

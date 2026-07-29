@@ -45,7 +45,6 @@ class VisitDetailsPage extends StatelessWidget {
         child: Text("لا توجد ملاحظات طبية لهذه الزيارة حالياً."),
       ),
         
-            // يمكنك إضافة المزيد من التفاصيل هنا بناءً على الجداول الأخرى
           ],
         ),
       ),
