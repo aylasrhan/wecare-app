@@ -80,37 +80,7 @@ Future<List<String>> getBookedTimes(int doctorId, String date) async {
 }
 
 
-// Future<UserModel> login(String email, String password) async {
-//   final response = await http.post(
-//     Uri.parse('${baseUrl}Api_login'),
-//     body: {'email': email, 'password': password},
-//   );
-  
-//   final responseData = json.decode(response.body);
-  
-//   if (response.statusCode == 200) {
-//     // الوصول إلى البيانات داخل مفتاح 'data' كما في اللارفل
-//     final data = responseData['data']; 
-    
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-    
-//     // 1. حفظ التوكين
-//     if (data.containsKey('user_token')) { 
-//       await prefs.setString('user_token', data['user_token']);
-//       print("تم حفظ التوكين بنجاح");
-//     }
-    
-//     // 2. حفظ الدور (roles_name)
-//     if (data.containsKey('roles_name')) {
-//       await prefs.setString('roles_name', data['roles_name']);
-//       print("تم حفظ الدور: ${data['roles_name']}");
-//     }
-    
-//     return UserModel.fromJson(responseData);
-//   } else {
-//     throw Exception(responseData['message'] ?? 'Failed to login');
-//   }
-// }
+
 Future<UserModel> login(String email, String password) async {
   final response = await http.post(
     Uri.parse('${baseUrl}Api_login'),
@@ -126,13 +96,7 @@ Future<UserModel> login(String email, String password) async {
     // 🔴 التعديل هنا: فحصنا أن الـ data موجودة وليست null
     if (data != null && data is Map) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      
-      // // 1. حفظ التوكين
-      // if (data.containsKey('user_token')) { 
-      //   // وحدنا الاسم هنا ليصبح 'token' ليعمل بشكل صحيح مع باقي التطبيق
-      //   await prefs.setString('token', data['user_token']);
-      //   print("تم حفظ التوكين بنجاح");
-      // }
+     
       // 1. حفظ التوكين بالاسمين معاً لضمان توافقه مع كل الدوال
       if (data.containsKey('user_token')) { 
         String tokenValue = data['user_token'];
@@ -406,29 +370,7 @@ Future<List<VisitModel>> getVisits() async {
 }
 
 
-// اضافة مؤقتة
-// Future<List<dynamic>> getDoctorTodayAppointments() async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   String? token = prefs.getString('user_token');
 
-//   final response = await http.get(
-//     Uri.parse('${baseUrl}doctor-today-appointments'),
-//     headers: {
-//       'Authorization': 'Bearer $token',
-//       'Accept': 'application/json',
-//     },
-//   );
-
-//   print("Doctor Today Appointments: ${response.body}");
-
-//   if (response.statusCode == 200) {
-//     final data = json.decode(response.body);
-//     // بناءً على كود لارافل، البيانات تعود داخل المفتاح 'Appointments' أو 'data'
-//     return data['Appointments'] ?? []; 
-//   } else {
-//     throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
-//   }
-// }
 // اضافة مؤقتة
 Future<List<dynamic>> getDoctorTodayAppointments() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -443,7 +385,7 @@ Future<List<dynamic>> getDoctorTodayAppointments() async {
   }
 
   final response = await http.get(
-    Uri.parse('${baseUrl}doctor-today-appointments'),
+    Uri.parse('${baseUrl}doctor-appointments'),
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
