@@ -375,7 +375,7 @@ Future<List<VisitModel>> getVisits() async {
 Future<List<dynamic>> getDoctorTodayAppointments() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   
-  // 🔴 التعديل 1: قراءة التوكن بالاسم الصحيح 'token'
+  // 🔴 التعديل 1: قراءة التوكن بالاسم الصحيح 't oken'
   String? token = prefs.getString('token'); 
 
   // 🔴 التعديل 2: حماية التطبيق من إرسال null للسيرفر
