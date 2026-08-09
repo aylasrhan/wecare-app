@@ -42,42 +42,7 @@ class SignInPage extends StatelessWidget {
     );
   }
 },
-//      listener: (context, state) {
-//   if (state is AuthSuccess) {
-//     // جلب الدور إما من الـ state القادم من السيرفر أو من المتغير المرسل للصفحة
-//     String userRole = state.user.role; // أو استخدام المتغير role الممرر للـ SignInPage
 
-//     if (userRole == 'doctor') {
-//       // توجيه الطبيب إلى صفحته الخاصة بالمواعيد
-//       Navigator.pushReplacement(
-//         context,
-//         MaterialPageRoute(builder: (context) => DoctorTodayAppointmentsScreen()), // استبدلها بواجهة الطبيب لديك
-//       );
-//     } else {
-//       // توجيه المريض إلى الصفحة الرئيسية الخاصة بالمريض
-//       Navigator.pushReplacement(
-//         context,
-//         MaterialPageRoute(builder: (context) => HomeScreenPage()), // صفحة المريض التي ذكرتها
-//       );
-//     }
-//   } else if (state is AuthError) {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-//     );
-//   }
-// },
-// listener: (context, state) {
-//   if (state is AuthSuccess) {
-//     // الآن يمكنك الوصول للدور من خلال state.user.role
-//     print("تم تسجيل الدخول بنجاح، الدور هو: ${state.user.role}");
-    
-//     Navigator.pushReplacement(
-//       context,
-//       MaterialPageRoute(builder: (context) => HomeScreenPage()),
-//     );
-//   }
-//   // ...
-// },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
