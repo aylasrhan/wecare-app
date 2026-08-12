@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wecare/features/auth/login/presentation/cubit/auth_bloc.dart';
@@ -7,42 +8,46 @@ import 'package:wecare/features/auth/sign_up/presentation/ui/view/sign_up.dart';
 import 'package:wecare/features/doctor/presentation/ui/view/doctor_today_appointments_screen.dart';
 import 'package:wecare/features/home/presentation/ui/view/home_screen.dart';
 
-class SignInPage extends StatelessWidget {
-  final String role; // أضف هذا السطر
+class SignInPage extends StatefulWidget {
+  final String role;
   SignInPage({required this.role});
+
+  @override
+  State<SignInPage> createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  
+  bool _isPasswordHidden = true; 
+  
+  bool _rememberPassword = false;
 
   @override
   Widget build(BuildContext context) {
-    // BlocListener يستمع لتغيرات الحالة ويقوم برد فعل (مثل الانتقال للصفحة التالية)
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-  if (state is AuthSuccess) {
-    // استخدم المتغير role المُمرر للصفحة مباشرة، أو افحص الاثنين لضمان الصحة
-    print("الدور المُمرر للصفحة هو: $role");
-    
-    // التحقق بناءً على الدور المرسل أو الدور القادم من الـ state
-    if (role.toLowerCase() == 'doctor' || (state.user.role != null && state.user.role.toLowerCase() == 'doctor')) {
-      // توجيه الطبيب إلى صفحته الخاصة بالمواعيد
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => DoctorAppointmentsScreen()),
-      );
-    } else {
-      // توجيه المريض إلى الصفحة الرئيسية الخاصة بالمريض
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreenPage()),
-      );
-    }
-  } else if (state is AuthError) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-    );
-  }
-},
-
+        if (state is AuthSuccess) {
+          print("الدور المُمرر للصفحة هو: ${widget.role}");
+          
+          if (widget.role.toLowerCase() == 'doctor' || (state.user.role != null && state.user.role.toLowerCase() == 'doctor')) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => DoctorAppointmentsScreen()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreenPage()),
+            );
+          }
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+          );
+        }
+      },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -86,10 +91,20 @@ class SignInPage extends StatelessWidget {
 
               TextField(
                 controller: passwordController,
-                obscureText: true,
+                obscureText: _isPasswordHidden, 
                 decoration: InputDecoration(
                   labelText: "Password",
-                  suffixIcon: Icon(Icons.visibility_off, color: Colors.grey),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordHidden ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordHidden = !_isPasswordHidden;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -103,20 +118,30 @@ class SignInPage extends StatelessWidget {
               Row(
                 children: [
                   Checkbox(
-                    value: false,
-                    onChanged: (v) {},
+                    value: _rememberPassword,   
+                    onChanged: (bool? newValue) {
+                      setState(() {
+                        _rememberPassword = newValue ?? false;
+                      });
+                    },
                     activeColor: Color(0xFF1E1E66),
                   ),
-                  Text(
-                    "Remember password",
-                    style: TextStyle(color: Colors.grey[700]),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _rememberPassword = !_rememberPassword;
+                      });
+                    },
+                    child: Text(
+                      "Remember password",
+                      style: TextStyle(color: Colors.grey[700]),
+                    ),
                   ),
                 ],
               ),
 
               SizedBox(height: 30),
 
-              // زر تسجيل الدخول
               BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
                   return ElevatedButton(
@@ -134,7 +159,7 @@ class SignInPage extends StatelessWidget {
                               LoginEvent(
                                 emailController.text,
                                 passwordController.text,
-                                role: role
+                                role: widget.role, 
                               ),
                             );
                           },
