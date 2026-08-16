@@ -9,13 +9,26 @@ class AppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 1. جلب اسم الطبيب ديناميكياً
+    // String doctorName = "طبيب غير محدد";
+    // if (appointment['doctor'] != null && appointment['doctor']['name'] != null) {
+    //   doctorName = appointment['doctor']['name'];
+    // } else if (appointment['doctor_name'] != null) {
+    //   doctorName = appointment['doctor_name'];
+    // }
+    print("APPOINTMENT DATA: $appointment");
+// 1. جلب اسم الطبيب ديناميكياً بدقة تامة
+   // 1. جلب اسم الطبيب ديناميكياً بكل الاحتمالات الممكنة
     String doctorName = "طبيب غير محدد";
-    if (appointment['doctor'] != null && appointment['doctor']['name'] != null) {
-      doctorName = appointment['doctor']['name'];
+    
+    if (appointment['doctor'] != null) {
+      doctorName = appointment['doctor']['name_ar'] ?? appointment['doctor']['name'] ?? appointment['doctor']['name_en'] ?? "طبيب غير محدد";
+    } else if (appointment['doctor_info'] != null) {
+      doctorName = appointment['doctor_info']['name_ar'] ?? "طبيب غير محدد";
     } else if (appointment['doctor_name'] != null) {
       doctorName = appointment['doctor_name'];
+    } else if (appointment['name_ar'] != null) {
+      doctorName = appointment['name_ar'];
     }
-
     // 2. جلب التاريخ والوقت
     String appointmentDate = appointment['appointment_date']?.toString() ?? "";
     String appointmentTime = appointment['time']?.toString() ?? 
