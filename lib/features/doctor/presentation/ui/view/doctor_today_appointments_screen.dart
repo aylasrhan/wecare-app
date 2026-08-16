@@ -45,8 +45,8 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
             } else if (snapshot.hasError) {
               return Center(child: Text('خطأ: ${snapshot.error}'));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('لا توجد مواعيد اليوم'));
-            }
+            return const Center(child: Text('لا توجد مواعيد مسجلة')); // 🔴 تعدل النص ليكون عاماً
+          }
 
             final appointments = snapshot.data!;
 
@@ -58,7 +58,7 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
               children: [
                 // التبويب الأول: الطلبات الجديدة
                 pendingAppointments.isEmpty 
-                  ? const Center(child: Text('لا توجد طلبات معلقة', style: TextStyle(color: Colors.grey)))
+                  ? const Center(child: Text('لا توجد طلبات معلقة', style: TextStyle(color: Colors.grey))) // ستظهر هنا لأن الـ status = 0)
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: pendingAppointments.length,

@@ -10,47 +10,62 @@ class AuthService {
   final String baseUrl = "http://10.0.2.2:8000/api/";
 
 
-
 Future<String> bookAppointment({
-  required int doctorId,
+  required dynamic doctor, // نقبل الطبيب كاملاً (سواء كان كائن Doctor أو Map) لضمان استخراج الـ ID الصحيح
   required String date,
   required String time,
 }) async {
   try {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token'); 
+    String? token = prefs.getString('token') ?? prefs.getString('user_token'); 
+
+    // استخراج الـ ID الحقيقي للطبيب بغض النظر عن شكل البيانات القادمة
+    int doctorId;
+    if (doctor is int) {
+      doctorId = doctor;
+    } else if (doctor is Map) {
+      doctorId = doctor['id'];
+    } else {
+      doctorId = doctor.id; // إذا كان كائن Doctor أو DoctorModel
+    }
+
+    print("🚨 [FINAL FIX] Booking with true Doctor ID: $doctorId for Date: $date, Time: $time");
 
     final response = await http.post(
       Uri.parse('${baseUrl}appointment-store'), 
       headers: {
-        'Content-Type': 'application/json', // 🔴 مهم جداً: إجبار لارافل على قراءة البيانات كـ JSON كما في كودك القديم
+        'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       },
-      // 🔴 نستخدم jsonEncode ونرسل كل المفاتيح المحتملة لضمان الحفظ
       body: jsonEncode({
-        'appointment_with': doctorId, // يطلبه الـ Validator
-        'available_slot': time,       // يطلبه الـ Validator
-        'appointment_date': date,     // مطلوب في كل مكان
-        'doctor_id': doctorId,        // 💡 نرسله تحسباً لأن الداتابيز تطلبه
-        'time': time,                 // 💡 نرسله تحسباً لأن الداتابيز تطلبه
+        'appointment_with': doctorId, // الـ ID الحقيقي والصحيح حصراً
+        'available_slot': time, 
+        'appointment_date': date,
+        'doctor_id': doctorId,
+        'time': time,
       }),
     );
 
+    print("Booking Response Status: ${response.statusCode}");
+    print("Booking Response Body: ${response.body}");
+
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      
-     if (data['success'] == true || data['error'] == "D00") {
+      if (data['success'] == true || data['error'] == "D00" || data['status'] == 'success') {
         return "success"; 
       } else {
-        // سيقوم بعرض أي رسالة خطأ (مثل: محجوز مسبقاً، أو خطأ بالداتابيز)
-        return data['msg'] ?? "خطأ غير معروف في السيرفر"; 
+        return data['msg'] ?? data['message'] ?? "خطأ غير معروف في السيرفر"; 
       }
     }
-return "خطأ في الاتصال: ${response.statusCode}";  } catch (e) {
+    return "خطأ في الاتصال: ${response.statusCode}"; 
+  } catch (e) {
+    print("Booking Error: $e");
     return "حدث خطأ في الاتصال بالخادم";
   }
 }
+
+
 Future<List<String>> getBookedTimes(int doctorId, String date) async {
   try {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -106,9 +121,21 @@ Future<UserModel> login(String email, String password) async {
       }
       
       // 2. حفظ الدور (roles_name)
+      // if (data.containsKey('roles_name')) {
+      //   await prefs.setString('roles_name', data['roles_name']);
+      //   print("تم حفظ الدور: ${data['roles_name']}");
+      // }
+      // 2. حفظ الدور (roles_name)
       if (data.containsKey('roles_name')) {
-        await prefs.setString('roles_name', data['roles_name']);
-        print("تم حفظ الدور: ${data['roles_name']}");
+        var roleData = data['roles_name'];
+        String roleStr = '';
+        if (roleData is List && roleData.isNotEmpty) {
+          roleStr = roleData[0].toString();
+        } else {
+          roleStr = roleData.toString();
+        }
+        await prefs.setString('roles_name', roleStr);
+        print("تم حفظ الدور بنجاح: $roleStr");
       }
       
       return UserModel.fromJson(responseData);
@@ -147,19 +174,17 @@ Future<Map<String, dynamic>> register({
   required String password,
   required String passwordConfirmation,
   required String role,
-  // جعلنا الحقول الخاصة بالمريض اختيارية بوضع علامة ? وإزالة required
   String? motherName,
   String? mobile,
   String? birthDate,
-  String? sex,
+  int? sex,          // 🔴 التعديل هنا: جعلناه int
   String? blood,
-  String? city,
-  String? nationality,
+  int? city,         // 🔴 التعديل هنا: جعلناه int (معرّف المدينة ID)
+  int? nationality,  // 🔴 التعديل هنا: جعلناه int (معرّف الجنسية ID)
   String? address,
-  String? specialization, // أضيفي هذا الحقل
+  String? specialization,
 }) async {
   
-  // ننشئ الـ Body بشكل ديناميكي
   Map<String, String> body = {
     'name': name,
     'email': email,
@@ -168,16 +193,16 @@ Future<Map<String, dynamic>> register({
     'roles_name': role,
   };
 
-  // نضيف الحقول فقط إذا لم تكن null
   if (motherName != null) body['mother_name'] = motherName;
   if (mobile != null) body['mobile'] = mobile;
   if (birthDate != null) body['birth_date'] = birthDate;
-  if (sex != null) body['sex'] = sex;
+  if (sex != null) body['sex'] = sex.toString();
   if (blood != null) body['blood'] = blood;
-  if (city != null) body['p_city'] = city;
-  if (nationality != null) body['nationality'] = nationality;
+  if (city != null) body['p_city'] = city.toString();         // يرسل رقم الـ ID
+  if (nationality != null) body['nationality'] = nationality.toString(); // يرسل رقم الـ ID
   if (address != null) body['address'] = address;
-if (specialization != null) body['specialization'] = specialization; // أضيفي هذا السطر
+  if (specialization != null) body['specialization'] = specialization;
+
   final response = await http.post(
     Uri.parse('${baseUrl}register'),
     body: body,
@@ -195,7 +220,6 @@ if (specialization != null) body['specialization'] = specialization; // أضيف
       await prefs.setString('roles_name', role);
       print("تم حفظ التوكين بنجاح: ${data['user_token']}");
     }
-    
     return data;
   } else {
     String errorMessage = data['message'] ?? 'Failed to register';
@@ -371,14 +395,12 @@ Future<List<VisitModel>> getVisits() async {
 
 
 
-// اضافة مؤقتة
 Future<List<dynamic>> getDoctorTodayAppointments() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   
-  // 🔴 التعديل 1: قراءة التوكن بالاسم الصحيح 't oken'
-  String? token = prefs.getString('token'); 
+  // قراءة التوكن بالطريقتين لضمان عدم ضياعه
+  String? token = prefs.getString('token') ?? prefs.getString('user_token'); 
 
-  // 🔴 التعديل 2: حماية التطبيق من إرسال null للسيرفر
   if (token == null) {
     print("🚨 تنبيه: التوكن غير موجود في الذاكرة! يرجى تسجيل الدخول.");
     throw Exception('غير مصرح لك، يرجى تسجيل الدخول من جديد.');
@@ -392,43 +414,24 @@ Future<List<dynamic>> getDoctorTodayAppointments() async {
     },
   );
 
-  print("Doctor Today Appointments: ${response.body}");
+  print("Doctor All Appointments Response: ${response.body}");
 
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
-    // بناءً على كود لارافل، البيانات تعود داخل المفتاح 'Appointments' أو 'data'
-    return data['Appointments'] ?? []; 
-  } else {
-    throw Exception('فشل في جلب المواعيد: ${response.statusCode}');
+    
+    // فحص جميع المفاتيح المحتملة القادمة من السيرفر لإرجاع القائمة كاملة
+    if (data is List) {
+      return data;
+    } else if (data is Map) {
+      return data['Appointments'] ?? data['appointments'] ?? data['data'] ?? [];
+    }
   }
+  
+  return [];
 }
 
 
-//29 الشهر
-// دالة قبول الموعد من قبل الطبيب
-// Future<bool> acceptAppointment(int appointmentId) async {
-//   try {
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-//     String? token = prefs.getString('token') ?? prefs.getString('user_token');
 
-//     final response = await http.post(
-//       Uri.parse('${baseUrl}appointment/accept/$appointmentId'), // تأكدي من تطابق الرابط مع لارافل
-//       headers: {
-//         'Authorization': 'Bearer $token',
-//         'Accept': 'application/json',
-//       },
-//     );
-
-//     if (response.statusCode == 200) {
-//       final data = json.decode(response.body);
-//       return data['success'] == true || response.statusCode == 200;
-//     }
-//     return false;
-//   } catch (e) {
-//     print("Error accepting appointment: $e");
-//     return false;
-//   }
-// }
 
 Future<bool> acceptAppointment(int appointmentId) async {
   try {
