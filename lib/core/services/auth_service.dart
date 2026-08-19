@@ -488,4 +488,58 @@ Future<bool> rejectAppointment(int appointmentId) async {
     return false;
   }
 }
+
+
+
+// ==========================================
+  // دالة إرسال التقييم للطبيب
+  // ==========================================
+  Future<bool> submitDoctorReview({
+    required int doctorId,
+    required int patientId,
+    required int rating,
+    String? comment,
+  }) async {
+    try {
+      // 1. جلب التوكن من الذاكرة
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token') ?? prefs.getString('user_token');
+
+      if (token == null) {
+        print("🚨 خطأ: لا يوجد توكن مسجل.");
+        return false;
+      }
+
+      print("جاري إرسال التقييم... الطبيب: $doctorId | التقييم: $rating");
+
+      // 2. إرسال الطلب للسيرفر
+      final response = await http.post(
+        Uri.parse('${baseUrl}doctor/rate'), // الرابط سيصبح: http://10.0.2.2:8000/api/doctor/rate
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'doctor_id': doctorId,
+          'user_id': patientId,
+          'rating': rating,
+          'comment': comment ?? '',
+        }),
+      );
+
+      print("حالة رد التقييم: ${response.statusCode}");
+      print("محتوى رد التقييم: ${response.body}");
+
+      // 3. فحص النتيجة (201 أو 200 تعني النجاح)
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print("حدث خطأ أثناء إرسال التقييم: $e");
+      return false;
+    }
+  }
 }
