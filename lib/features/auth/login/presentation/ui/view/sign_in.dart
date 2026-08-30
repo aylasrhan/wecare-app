@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wecare/features/auth/login/presentation/cubit/auth_bloc.dart';
 import 'package:wecare/features/auth/login/presentation/cubit/auth_event.dart';
 import 'package:wecare/features/auth/login/presentation/cubit/auth_state.dart';
@@ -27,19 +28,63 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
+      listener: (context, state) async { // 🔴 التعديل هنا: أضفنا async
         if (state is AuthSuccess) {
-          print("الدور المُمرر للصفحة هو: ${widget.role}");
+          print("البوابة المختارة هي: ${widget.role}");
           
-          if (widget.role.toLowerCase() == 'doctor' || (state.user.role != null && state.user.role.toLowerCase() == 'doctor')) {
-            Navigator.pushReplacement(
+          // 1. جلب الدور الحقيقي الذي تم حفظه للتو من السيرفر
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          String actualRole = prefs.getString('roles_name')?.toLowerCase() ?? '';
+          String requestedPortal = widget.role.toLowerCase();
+
+          // 2. التحقق: طبيب يحاول الدخول من بوابة المرضى
+          if (requestedPortal == 'patient' && actualRole == 'doctor') {
+            await prefs.clear(); // مسح البيانات فوراً (إلغاء الدخول)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('عذراً، هذا الحساب خاص بالأطباء. يرجى الدخول من بوابة الأطباء.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return; // إيقاف العملية وعدم الانتقال
+          }
+
+          // 3. التحقق: مريض يحاول الدخول من بوابة الأطباء
+          if (requestedPortal == 'doctor' && actualRole != 'doctor') {
+            await prefs.clear(); // مسح البيانات فوراً (إلغاء الدخول)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('عذراً، هذا الحساب خاص بالمرضى. يرجى الدخول من بوابة المرضى.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return; // إيقاف العملية وعدم الانتقال
+          }
+
+          // 4. إذا كان كل شيء صحيحاً، يتم التوجيه للصفحة المناسبة
+          // if (actualRole == 'doctor') {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(builder: (context) => DoctorAppointmentsScreen()),
+          //   );
+          // } else {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(builder: (context) => HomeScreenPage()),
+          //   );
+          // }
+          // 4. إذا كان كل شيء صحيحاً، يتم التوجيه للصفحة المناسبة
+          if (actualRole == 'doctor') {
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => DoctorAppointmentsScreen()),
+              (Route<dynamic> route) => false, // 🔴 تمسح السجل بالكامل
             );
           } else {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => HomeScreenPage()),
+              (Route<dynamic> route) => false, // 🔴 تمسح السجل بالكامل
             );
           }
         } else if (state is AuthError) {
@@ -48,6 +93,28 @@ class _SignInPageState extends State<SignInPage> {
           );
         }
       },
+    // return BlocListener<AuthBloc, AuthState>(
+    //   listener: (context, state) {
+    //     if (state is AuthSuccess) {
+    //       print("الدور المُمرر للصفحة هو: ${widget.role}");
+          
+    //       if (widget.role.toLowerCase() == 'doctor' || (state.user.role != null && state.user.role.toLowerCase() == 'doctor')) {
+    //         Navigator.pushReplacement(
+    //           context,
+    //           MaterialPageRoute(builder: (context) => DoctorAppointmentsScreen()),
+    //         );
+    //       } else {
+    //         Navigator.pushReplacement(
+    //           context,
+    //           MaterialPageRoute(builder: (context) => HomeScreenPage()),
+    //         );
+    //       }
+    //     } else if (state is AuthError) {
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+    //       );
+    //     }
+    //   },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
