@@ -1,7 +1,9 @@
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 
 class AddDiagnosisScreen extends StatefulWidget {
   final int patientId;
@@ -21,6 +23,13 @@ class _AddDiagnosisScreenState extends State<AddDiagnosisScreen> {
   final TextEditingController _complaintController = TextEditingController();
   final TextEditingController _diagnosisController = TextEditingController();
   bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _complaintController.dispose();
+    _diagnosisController.dispose();
+    super.dispose();
+  }
 
   Future<void> _saveDiagnosis() async {
     if (_diagnosisController.text.trim().isEmpty) {
@@ -58,7 +67,7 @@ class _AddDiagnosisScreenState extends State<AddDiagnosisScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('تم الحفظ بنجاح!'), backgroundColor: Colors.green),
         );
-        Navigator.pop(context); // العودة للشاشة السابقة بعد الحفظ
+        Navigator.pop(context); 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(jsonResponse['msg'] ?? 'فشل في الحفظ'), backgroundColor: Colors.red),
@@ -83,22 +92,22 @@ class _AddDiagnosisScreenState extends State<AddDiagnosisScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
+        title: Text(
           "إضافة فحص سريري",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20.sp), 
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.w), 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "الشكاية الرئيسية للمريض",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold), 
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h), 
             TextField(
               controller: _complaintController,
               maxLines: 3,
@@ -107,21 +116,21 @@ class _AddDiagnosisScreenState extends State<AddDiagnosisScreen> {
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r), 
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r), 
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24.h), 
+            Text(
               "التشخيص الطبي (مطلوب)",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold), 
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h), 
             TextField(
               controller: _diagnosisController,
               maxLines: 4,
@@ -130,32 +139,32 @@ class _AddDiagnosisScreenState extends State<AddDiagnosisScreen> {
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r), 
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r), 
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h), 
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 50.h, 
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r), 
                   ),
                 ),
                 onPressed: _isSaving ? null : _saveDiagnosis,
                 child: _isSaving
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
+                    : Text(
                         "حفظ البيانات",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
               ),
             ),

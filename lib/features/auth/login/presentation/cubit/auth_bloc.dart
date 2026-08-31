@@ -9,17 +9,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc(this.authService) : super(AuthInitial()) {
     on<LoginEvent>((event, emit) async {
-      // استخدام الـ Interpolation (${}) آمن أكثر عند الطباعة لتجنب الـ null
       print("جاري تسجيل الدخول كـ: ${event.role}"); 
-      emit(AuthLoading()); // حالة التحميل
+      emit(AuthLoading()); 
       
-    // داخل ملف auth_bloc.dart
 try {
   final user = await authService.login(event.email, event.password);
   
-  // تأكدي من أن التوكن ليس فارغاً
   if (user.token.isNotEmpty) {
-    emit(AuthSuccess(user)); // أرسلي كائن user بالكامل وليس user.token فقط
+    emit(AuthSuccess(user));
   } else {
     emit(AuthError("لم يتم استلام رمز دخول صحيح"));
   }

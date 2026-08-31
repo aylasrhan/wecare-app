@@ -1,21 +1,21 @@
 
-
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wecare/core/services/auth_service.dart'; // تأكد من صحة مسار الاستيراد
-import 'package:wecare/features/auth/login/presentation/ui/view/sign_in.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
+import 'package:wecare/core/services/auth_service.dart';
 import 'package:wecare/features/onboarding/presentation/ui/view/onboadring_contener/role_selection_page.dart';
+import 'package:wecare/features/home/presentation/ui/widgets/profile_text_field.dart'; // 🔴 استيراد الودجت المنفصل
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  bool isLoading = true; // للتحكم في شاشة التحميل
+  bool isLoading = true; 
 
-  // Controllers للتحكم في الحقول بشكل صحيح
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
@@ -27,7 +27,6 @@ class _ProfilePageState extends State<ProfilePage> {
     fetchProfileData();
   }
 
-  // دالة جلب البيانات من السيرفر
   Future<void> fetchProfileData() async {
     try {
       final data = await AuthService().getUserProfile();
@@ -38,9 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
         final patient = data['patient'];
 
         setState(() {
-          // تعبئة البيانات القادمة من السيرفر داخل الحقول
           nameController.text = patient['f_name'] ?? "";
-          // الإيميل موجود داخل كائن user الفرعي
           emailController.text = patient['user'] != null
               ? patient['user']['email'] ?? ""
               : "";
@@ -63,36 +60,37 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  
-// دالة تسجيل الخروج ومسح الذاكرة
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // الأفضل مسح كل الذاكرة لضمان خروج آمن 100%
+    await prefs.clear(); 
 
     if (!mounted) return;
 
-    // الانتقال لصفحة اختيار البوابة وحذف كل الصفحات السابقة من الذاكرة
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => RoleSelectionPage()), // 🔴 التعديل هنا
+      MaterialPageRoute(builder: (context) => RoleSelectionPage()), 
       (route) => false,
     );
   }
+
   @override
   void dispose() {
-    // تنظيف الكنترولرز عند الخروج من الشاشة لتجنب تسريب الذاكرة
     nameController.dispose();
     emailController.dispose();
     mobileController.dispose();
     addressController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Profile", style: TextStyle(color: Colors.black)),
+        title: Text(
+          "Profile", 
+          style: TextStyle(color: Colors.black, fontSize: 20.sp), 
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -103,75 +101,52 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: CircularProgressIndicator(color: Color(0xFF1E1E66)),
               )
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.w), 
                 child: Column(
                   children: [
-                    const Center(
+                    Center(
                       child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Color(0xFFE8EAF6),
+                        radius: 50.r, 
+                        backgroundColor: const Color(0xFFE8EAF6),
                         child: Icon(
                           Icons.person,
-                          size: 50,
-                          color: Color(0xFF1E1E66),
+                          size: 50.sp, 
+                          color: const Color(0xFF1E1E66),
                         ),
-                        // backgroundImage: NetworkImage("URL"), // فعّلها إذا كان هناك صورة من السيرفر
                       ),
                     ),
                     TextButton(
                       onPressed: () {},
-                      child: const Text(
+                      child: Text(
                         "Change Photo",
-                        style: TextStyle(color: Color(0xFF1E1E66)),
+                        style: TextStyle(
+                          color: const Color(0xFF1E1E66),
+                          fontSize: 16.sp, 
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h), 
 
-                    _buildTextField("Name", nameController),
-                    _buildTextField("Email", emailController),
-                    _buildTextField("Mobile Number", mobileController),
-                    _buildTextField("Address", addressController),
+                    ProfileTextField(label: "Name", controller: nameController),
+                    ProfileTextField(label: "Email", controller: emailController),
+                    ProfileTextField(label: "Mobile Number", controller: mobileController),
+                    ProfileTextField(label: "Address", controller: addressController),
 
-                    const SizedBox(height: 30),
+                    SizedBox(height: 30.h), 
 
                     TextButton.icon(
                       onPressed: _logout,
-                      icon: const Icon(Icons.logout, color: Colors.red),
-                      label: const Text(
+                      icon: Icon(Icons.logout, color: Colors.red, size: 24.sp), 
+                      label: Text(
                         "Log Out",
-                        style: TextStyle(color: Colors.red, fontSize: 18),
+                        style: TextStyle(color: Colors.red, fontSize: 18.sp), 
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h), 
                   ],
                 ),
               ),
       ),
-    );
-  }
-
-  // تم تعديل هذه الدالة لتستقبل TextEditingController
-  Widget _buildTextField(String label, TextEditingController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 16)),
-        const SizedBox(height: 5),
-        TextField(
-          controller: controller,
-          readOnly:
-              true, // جعلنا الحقل للقراءة فقط (إلا إذا كنت تريد تفعيل التعديل لاحقاً)
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            filled: true,
-            fillColor: Colors.grey[100],
-          ),
-        ),
-        const SizedBox(height: 15),
-      ],
     );
   }
 }

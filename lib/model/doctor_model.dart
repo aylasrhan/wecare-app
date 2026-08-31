@@ -19,7 +19,6 @@ class Doctor {
     return Doctor(
       id: json['id'],
       nameAr: json['name_ar'] ?? 'غير معروف',
-      // هنا حل المشكلة: تأكد أن الأسماء تطابق ما يأتي من السيرفر تماماً
       fromTime: json['from_time']?.toString(),
       toTime: json['to_time']?.toString(),
       specializationAr: json['specialization_ar'],
@@ -27,7 +26,6 @@ class Doctor {
     );
   }
 
-  // أضف هذه الدالة هنا:
   Map<String, dynamic> toJson() {
     return {
       'id': id,

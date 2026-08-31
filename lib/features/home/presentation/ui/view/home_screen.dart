@@ -1,13 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// استيراد الصفحات
 import 'package:wecare/features/home/presentation/ui/view/medical_screen.dart';
 import 'package:wecare/features/home/presentation/ui/view/more_screen.dart';
-import 'package:wecare/features/home/presentation/ui/view/visit_screen.dart';
-
-// 🔴 استيراد صفحة المحتوى اللي فصلناها هلا
+import 'package:wecare/features/home/visits/presentation/ui/view/visit_screen.dart';
 import 'package:wecare/features/home/presentation/ui/view/home_page_content.dart'; 
 
 class HomeScreenPage extends StatefulWidget {
@@ -26,65 +24,34 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
   void initState() {
     super.initState();
     _pages = [
-      HomePageContent(), // تم استدعاء الصفحة المفصولة هنا
+      HomePageContent(), 
       VisitsPage(),
       MedicalPage(),
       MorePage(),
     ];
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     backgroundColor: Colors.white,
-  //     body: IndexedStack(
-  //       index: _currentIndex,
-  //       children: _pages,
-  //     ),
-  //     bottomNavigationBar: BottomNavigationBar(
-  //       type: BottomNavigationBarType.fixed,
-  //       selectedItemColor: const Color(0xFF1E1E66),
-  //       unselectedItemColor: Colors.grey,
-  //       currentIndex: _currentIndex,
-  //       onTap: (index) => setState(() => _currentIndex = index),
-  //       items: const [
-  //         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.calendar_month),
-  //           label: "Visits",
-  //         ),
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.medical_services),
-  //           label: "Medical",
-  //         ),
-  //         BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: "More"),
-  //       ],
-  //     ),
-  //   );
-  // }
   @override
   Widget build(BuildContext context) {
-    // 🔴 استخدام PopScope للتحكم بزر الرجوع
     return PopScope(
-      canPop: false, // نمنع الرجوع التلقائي
+      canPop: false, 
       onPopInvoked: (didPop) async {
         if (didPop) return;
         
-        // إظهار رسالة تأكيد الخروج من التطبيق
         final bool shouldPop = await showDialog<bool>(
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text('الخروج من التطبيق'),
-              content: const Text('هل أنت متأكد أنك تريد إغلاق التطبيق؟'),
+              title: Text('الخروج من التطبيق', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+              content: Text('هل أنت متأكد أنك تريد إغلاق التطبيق؟', style: TextStyle(fontSize: 15.sp)),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context, false), // البقاء
-                  child: const Text('لا'),
+                  onPressed: () => Navigator.pop(context, false), 
+                  child: Text('لا', style: TextStyle(fontSize: 14.sp)),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.pop(context, true), // الخروج
-                  child: const Text('نعم', style: TextStyle(color: Colors.red)),
+                  onPressed: () => Navigator.pop(context, true), 
+                  child: Text('نعم', style: TextStyle(color: Colors.red, fontSize: 14.sp)),
                 ),
               ],
             );
@@ -92,7 +59,7 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
         ) ?? false;
 
         if (shouldPop) {
-          SystemNavigator.pop(); // يغلق التطبيق بالكامل
+          SystemNavigator.pop(); 
         }
       },
       child: Scaffold(
@@ -105,6 +72,11 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
           type: BottomNavigationBarType.fixed,
           selectedItemColor: const Color(0xFF1E1E66),
           unselectedItemColor: Colors.grey,
+          
+          iconSize: 24.sp, 
+          selectedFontSize: 14.sp,
+          unselectedFontSize: 12.sp,
+          
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
           items: const [

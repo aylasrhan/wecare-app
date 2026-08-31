@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:wecare/features/home/presentation/ui/view/book_appointment_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
+import 'package:wecare/features/home/presentation/ui/widgets/doctor_booking_bottom_bar.dart'; // 🔴 استيراد شريط الحجز السفلي
 import 'package:wecare/model/doctor_model.dart';
 
 class DoctorProfileScreen extends StatelessWidget {
@@ -17,109 +18,69 @@ class DoctorProfileScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.sp),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Profile", style: TextStyle(color: Colors.black)),
+        title: Text("Profile", style: TextStyle(color: Colors.black, fontSize: 20.sp)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h), 
             Center(
               child: CircleAvatar(
-                radius: 60,
+                radius: 60.r, 
                 backgroundColor: Colors.blue.shade100,
                 backgroundImage: const AssetImage("assets/images/doctor.png"),
               ),
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15.h),
             Text(
               doctor.nameAr,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
             ),
             Text(
               doctor.specializationAr ?? "تخصص غير محدد",
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(fontSize: 16.sp, color: Colors.grey),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: 30.h),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20.w), 
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildTimeInfo("From Time", doctor.fromTime ?? "--:--"),
-                  Container(height: 40, width: 1, color: Colors.grey.shade300),
+                  Container(height: 40.h, width: 1.w, color: Colors.grey.shade300),
                   _buildTimeInfo("To Time", doctor.toTime ?? "--:--"),
                 ],
               ),
             ),
 
-            const SizedBox(height: 30),
+            SizedBox(height: 30.h),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
+              padding: EdgeInsets.symmetric(horizontal: 25.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "About :",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Text(
                     "هنا تكتب معلومات الطبيب بالتفصيل، السيرة الذاتية والخبرات الطبية.",
-                    style: TextStyle(fontSize: 16, color: Colors.grey.shade700, height: 1.5),
+                    style: TextStyle(fontSize: 16.sp, color: Colors.grey.shade700, height: 1.5),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
-              decoration: const BoxDecoration(
-                color: Color(0xFFE3F2FD),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Slot Time", style: TextStyle(color: Colors.grey)),
-                      Text(
-                        doctor.slotTime?.toString() ?? "0",
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookAppointmentPage(doctor: doctor), // تم تعديلها هنا ✅
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1E1E66),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    ),
-                    child: const Text("Book Now", style: TextStyle(color: Colors.white, fontSize: 18)),
-                  ),
-                ],
-              ),
-            ),
+            DoctorBookingBottomBar(doctor: doctor),
           ],
         ),
       ),
@@ -129,9 +90,9 @@ class DoctorProfileScreen extends StatelessWidget {
   Widget _buildTimeInfo(String label, String time) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-        const SizedBox(height: 5),
-        Text(time, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(color: Colors.grey, fontSize: 14.sp)),
+        SizedBox(height: 5.h),
+        Text(time, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
       ],
     );
   }

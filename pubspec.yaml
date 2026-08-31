@@ -24,6 +24,8 @@ dependencies:
   shared_preferences: ^2.5.5
   zego_uikit_prebuilt_call: ^4.24.4
   flutter_rating_bar: ^4.0.1
+  flutter_screenutil: ^5.9.0
+  flutter_easyloading: ^3.0.5
 
 dev_dependencies:
   flutter_test:
