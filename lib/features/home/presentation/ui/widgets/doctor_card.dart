@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 import 'package:wecare/features/home/presentation/ui/view/doctor_profile_screen.dart';
 import 'package:wecare/model/doctor_model.dart';
 
@@ -21,37 +23,42 @@ class DoctorCard extends StatelessWidget {
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(15),
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.all(15.w), 
+        margin: EdgeInsets.symmetric(vertical: 8.h), 
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          borderRadius: BorderRadius.circular(20.r), 
+          boxShadow: [
+            BoxShadow(color: Colors.black12, blurRadius: 10.r), 
+          ],
         ),
         child: Row(
           children: [
             CircleAvatar(
-              radius: 35,
+              radius: 35.r, 
               backgroundColor: Colors.blue.shade100,
-              child: const Icon(Icons.person, size: 40),
+              child: Icon(Icons.person, size: 40.sp), 
             ),
-            const SizedBox(width: 15),
+            SizedBox(width: 15.w), 
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     doctor['name_ar'] ?? "غير معروف",
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold), 
+                    overflow: TextOverflow.ellipsis,
                   ),
+                  SizedBox(height: 2.h),
                   Text(
                     doctor['specialization_ar'] ?? "طبيب",
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Colors.grey, fontSize: 14.sp), 
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chat_bubble_outline, color: Color(0xFF1E1E66)),
+            SizedBox(width: 10.w),
+            Icon(Icons.chat_bubble_outline, color: const Color(0xFF1E1E66), size: 24.sp), 
           ],
         ),
       ),

@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 import 'package:wecare/features/home/presentation/ui/view/home_screen.dart';
 
 class AccountCreatedPage extends StatelessWidget {
@@ -11,70 +13,66 @@ class AccountCreatedPage extends StatelessWidget {
         elevation: 0,
         title: Text(
           "Account",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.black, 
+            fontWeight: FontWeight.bold,
+            fontSize: 20.sp, 
+          ),
         ),
         centerTitle: false,
-        automaticallyImplyLeading: false, // لمنع ظهور زر الرجوع
+        automaticallyImplyLeading: false, 
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30.0),
+        padding: EdgeInsets.symmetric(horizontal: 30.w), 
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // الصورة التوضيحية (الاحتفال)
-            // تأكد من إضافة الصورة في مجلد assets وتغيير المسار هنا
             Image.asset(
               "assets/images/congra.png", 
-              height: 300,
+              height: 300.h, 
             ),
             
-            SizedBox(height: 40),
+            SizedBox(height: 40.h), 
             
-            // نص التهنئة
             Text(
               "Congratulations!",
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 28.sp, 
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
             
-            SizedBox(height: 10),
+            SizedBox(height: 10.h),
             
-            // نص فرعي
             Text(
               "Your account has been created",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp, 
                 color: Colors.grey[600],
               ),
             ),
             
-            SizedBox(height: 50),
+            SizedBox(height: 50.h),
             
-            // زر الانتقال للصفحة الرئيسية
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF1E1E66),
-                minimumSize: Size(200, 55), // حجم الزر كما في الصورة
+                backgroundColor: const Color(0xFF1E1E66),
+                minimumSize: Size(200.w, 55.h), 
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(15.r),
                 ),
               ),
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreenPage()), // استبدل HomePage باسم الكلاس الخاص بصفحتك الرئيسية
-      (route) => false, // هذا الجزء يضمن مسح كل الـ Routes السابقة
-    );
-                // هنا ننتقل لصفحة التطبيق الرئيسية (Home)
-                // Navigator.pushAndRemoveUntil يُستخدم لمسح تاريخ الصفحات السابقة
-                // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomePage()), (route) => false);
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreenPage()),
+                  (route) => false, 
+                );
               },
               child: Text(
                 "Go Home",
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: TextStyle(color: Colors.white, fontSize: 18.sp), 
               ),
             ),
           ],

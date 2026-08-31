@@ -14,7 +14,6 @@ class LoginRemoteDataSource {
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
-      // هذا هو الـ Token الذي سيعطيكِ صلاحية الدخول لباقي التطبيق
       return jsonResponse['data']['user_token']; 
     } else {
       throw Exception('فشل تسجيل الدخول: تحقق من الإيميل وكلمة السر');

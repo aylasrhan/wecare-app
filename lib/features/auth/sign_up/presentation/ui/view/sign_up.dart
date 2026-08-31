@@ -1,7 +1,7 @@
 
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 import 'package:wecare/core/services/auth_service.dart';
 import 'package:wecare/features/auth/sign_up/presentation/ui/view/verify_email_screen.dart';
 
@@ -30,6 +30,18 @@ class _SignUpPageState extends State<SignUpPage> {
   void initState() {
     super.initState();
     loadData();
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    motherNameController.dispose();
+    mobileController.dispose();
+    addressController.dispose();
+    super.dispose();
   }
 
   void loadData() async {
@@ -62,14 +74,18 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(20.w), 
         child: Form(
           key: _formKey,
           child: Column(
             children: [
-              SizedBox(height: 50),
-              Text("Sign Up", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-              SizedBox(height: 20),
+              SizedBox(height: 50.h), 
+              Text(
+                "Sign Up", 
+                style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold) 
+              ),
+              SizedBox(height: 20.h),
+              
               _buildTextField("Name", controller: nameController),
               _buildTextField("Your Email", controller: emailController),
               _buildTextField("Password", controller: passwordController, isPassword: true),
@@ -84,70 +100,52 @@ class _SignUpPageState extends State<SignUpPage> {
               _buildDropdown("Select City", cityList, selectedCity, (val) => setState(() => selectedCity = val)),
               
               Padding(
-                padding: const EdgeInsets.only(bottom: 15),
+                padding: EdgeInsets.only(bottom: 15.h), 
                 child: InkWell(
                   onTap: () => _selectDate(context),
                   child: InputDecorator(
-                    decoration: InputDecoration(labelText: "BirthDate", border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                    decoration: InputDecoration(
+                      labelText: "BirthDate", 
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r)) 
+                    ),
                     child: Text(_selectedDate == null ? "Choose Date" : intl.DateFormat('MM/dd/yyyy').format(_selectedDate!)),
                   ),
                 ),
               ),
 
-              SizedBox(height: 20),
+              SizedBox(height: 20.h),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF1E1E66),
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  backgroundColor: const Color(0xFF1E1E66),
+                  minimumSize: Size(double.infinity, 50.h), 
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)), 
                 ),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     try {
-                      // await AuthService().register(
-                      //   name: nameController.text,
-                      //   email: emailController.text,
-                      //   password: passwordController.text,
-                      //   passwordConfirmation: confirmPasswordController.text,
-                      //   role: 'patient', // تحديد الدور كمريض
-                      //   motherName: motherNameController.text,
-                      //   mobile: mobileController.text,
-                      //   birthDate: _selectedDate != null ? intl.DateFormat('MM/dd/yyyy').format(_selectedDate!) : null,
-                      //   sex: selectedSex,
-                      //   blood: selectedBloodType,
-                      //   city: selectedCity,
-                      //   nationality: selectedNationality,
-                      //   address: addressController.text,
-                      // );
                       await AuthService().register(
-  name: nameController.text,
-  email: emailController.text,
-  password: passwordController.text,
-  passwordConfirmation: confirmPasswordController.text,
-  role: 'patient',
-  motherName: motherNameController.text,
-  mobile: mobileController.text,
-  birthDate: _selectedDate != null ? intl.DateFormat('MM/dd/yyyy').format(_selectedDate!) : null,
-  
-  // 🔴 التعديل هنا لتحويل القيم إلى أرقام (IDs أو قيم رقمية تناسب الباك إند):
-  sex: selectedSex == 'Male' ? 1 : (selectedSex == 'Female' ? 2 : null),
-  blood: selectedBloodType,
-  
-  // نرسل رقم الـ Index (مضافاً إليه 1) كمعرّف للـ ID للمدن والجنسيات
-  city: selectedCity != null ? cityList.indexOf(selectedCity!) + 1 : null,
-  nationality: selectedNationality != null ? nationalityList.indexOf(selectedNationality!) + 1 : null,
-  
-  address: addressController.text,
-);
+                        name: nameController.text,
+                        email: emailController.text,
+                        password: passwordController.text,
+                        passwordConfirmation: confirmPasswordController.text,
+                        role: 'patient',
+                        motherName: motherNameController.text,
+                        mobile: mobileController.text,
+                        birthDate: _selectedDate != null ? intl.DateFormat('MM/dd/yyyy').format(_selectedDate!) : null,
+                        sex: selectedSex == 'Male' ? 1 : (selectedSex == 'Female' ? 2 : null),
+                        blood: selectedBloodType,
+                        city: selectedCity != null ? cityList.indexOf(selectedCity!) + 1 : null,
+                        nationality: selectedNationality != null ? nationalityList.indexOf(selectedNationality!) + 1 : null,
+                        address: addressController.text,
+                      );
                       Navigator.push(context, MaterialPageRoute(builder: (context) => VerifyEmailPage()));
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                     }
                   }
                 },
-                child: Text("Sign Up", style: TextStyle(color: Colors.white, fontSize: 16)),
+                child: Text("Sign Up", style: TextStyle(color: Colors.white, fontSize: 16.sp)),
               ),
-              // ... بقية الـ UI الخاص بـ Sign In كما كان
             ],
           ),
         ),
@@ -162,14 +160,14 @@ class _SignUpPageState extends State<SignUpPage> {
     bool isNumber = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
+      padding: EdgeInsets.only(bottom: 15.h), 
       child: TextFormField(
         controller: controller,
         obscureText: isPassword,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r)), 
         ),
         validator: (value) => value!.isEmpty ? "Field Required" : null,
       ),
@@ -183,26 +181,20 @@ class _SignUpPageState extends State<SignUpPage> {
     Function(String?) onChanged,
   ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
+      padding: EdgeInsets.only(bottom: 15.h), 
       child: DropdownButtonFormField<String>(
-        // إضافة خاصية التوسع
         isExpanded: true,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r)), 
           filled: true,
-          fillColor: items.isEmpty
-              ? Colors.grey[200]
-              : Colors.white, // تلون بالرمادي إذا كانت فارغة
+          fillColor: items.isEmpty ? Colors.grey[200] : Colors.white,
         ),
         value: (items.contains(currentValue)) ? currentValue : null,
-        // إذا كانت القائمة فارغة، نجعل الـ items بـ null أو قائمة فارغة
         items: items.map((String value) {
           return DropdownMenuItem<String>(value: value, child: Text(value));
         }).toList(),
-        onChanged: items.isEmpty
-            ? null
-            : onChanged, // تمنع النقر إذا كانت فارغة
+        onChanged: items.isEmpty ? null : onChanged,
         hint: Text(items.isEmpty ? "جاري التحميل..." : "اختر $label"),
       ),
     );

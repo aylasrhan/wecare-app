@@ -1,10 +1,11 @@
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wecare/core/services/auth_service.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 
-// استيراد الودجتات اللي فصلناها
 import 'package:wecare/features/home/presentation/ui/widgets/appointment_card.dart';
 import 'package:wecare/features/home/presentation/ui/widgets/clinic_tile.dart';
 import 'package:wecare/features/home/presentation/ui/widgets/doctor_card.dart';
@@ -89,56 +90,52 @@ class _HomePageContentState extends State<HomePageContent> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             
-            // استدعاء الـ Header اللي فصلناه
             const HomeHeader(),
             
-            const SizedBox(height: 25),
+            SizedBox(height: 25.h),
             SizedBox(
-              height: 120,
+              height: 120.h, 
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: clinics.length,
-                      // استدعاء ClinicTile وتمرير البيانات إله
                       itemBuilder: (context, index) => ClinicTile(clinic: clinics[index]),
                     ),
             ),
-            const SizedBox(height: 25),
-            const Text(
+            SizedBox(height: 25.h),
+            Text(
               "Popular Doctor",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15.h),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: famousDoctors.length,
-              // استدعاء DoctorCard وتمرير البيانات إله
               itemBuilder: (context, index) => DoctorCard(doctor: famousDoctors[index]),
             ),
-            const SizedBox(height: 25),
-            const Text(
+            SizedBox(height: 25.h),
+            Text(
               "Upcoming Appointment",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15.h),
             upcomingAppointments.isEmpty 
-                ? const Text("لا توجد مواعيد قادمة") 
+                ? Text("لا توجد مواعيد قادمة", style: TextStyle(fontSize: 16.sp)) // 🔴 أضفنا حجم خط متجاوب للرسالة
                 : ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: upcomingAppointments.length,
-                    // استدعاء AppointmentCard وتمرير البيانات إله
                     itemBuilder: (context, index) => AppointmentCard(appointment: upcomingAppointments[index]),
                   ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
           ],
         ),
       ),

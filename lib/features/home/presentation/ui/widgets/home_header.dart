@@ -1,5 +1,7 @@
+
 import 'package:flutter/material.dart';
-import 'package:wecare/features/home/presentation/ui/view/search_result_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; 
+import 'package:wecare/features/home/searchresult/presentation/ui/view/search_result_page.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -13,47 +15,47 @@ class HomeHeader extends StatelessWidget {
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   "Find your",
-                  style: TextStyle(fontSize: 24, color: Colors.black54),
+                  style: TextStyle(fontSize: 24.sp, color: Colors.black54), 
                 ),
                 Text(
                   "Specialist",
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 32.sp, 
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const Icon(
+            Icon(
               Icons.notifications_none,
-              size: 30,
-              color: Color(0xFF1E1E66),
+              size: 30.sp, 
+              color: const Color(0xFF1E1E66),
             ),
           ],
         ),
-        const SizedBox(height: 25),
+        SizedBox(height: 25.h), 
         GestureDetector(
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) =>  SearchResultPage()),
+            MaterialPageRoute(builder: (context) => SearchResultPage()),
           ),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            height: 55,
+            padding: EdgeInsets.symmetric(horizontal: 15.w), 
+            height: 55.h, 
             decoration: BoxDecoration(
               color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(15.r), 
             ),
             child: Row(
-              children: const [
-                Icon(Icons.search, color: Colors.grey),
-                SizedBox(width: 10),
+              children: [
+                Icon(Icons.search, color: Colors.grey, size: 24.sp), 
+                SizedBox(width: 10.w),
                 Text(
                   "Search doctor...",
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.grey, fontSize: 16.sp), 
                 ),
               ],
             ),

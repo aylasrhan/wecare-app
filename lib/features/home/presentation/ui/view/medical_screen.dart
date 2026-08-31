@@ -1,9 +1,11 @@
 
-///كود الاسئلة 
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:wecare/features/home/presentation/ui/widgets/question_item_card.dart'; // 🔴 استيراد بطاقة السؤال
+import 'package:wecare/features/home/presentation/ui/widgets/medical_input_section.dart'; // 🔴 استيراد قسم الإدخال
 
 class QuestionItem {
   final String clinicName;
@@ -14,6 +16,8 @@ class QuestionItem {
 }
 
 class MedicalPage extends StatefulWidget {
+  const MedicalPage({super.key});
+
   @override
   _MedicalPageState createState() => _MedicalPageState();
 }
@@ -26,9 +30,7 @@ class _MedicalPageState extends State<MedicalPage> {
   List clinics = [];
   bool isLoading = true;
 
-  // 💡 تم تصحيح الـ baseUrl ليطابق السيرفر الصحيح لديك
-  final String baseUrl =
-      "http://10.0.2.2:8000/api";
+  final String baseUrl = "http://10.0.2.2:8000/api";
 
   @override
   void initState() {
@@ -38,13 +40,17 @@ class _MedicalPageState extends State<MedicalPage> {
     });
   }
 
-  // دالة جلب العيادات (الأقسام)
+  @override
+  void dispose() {
+    _questionController.dispose();
+    super.dispose();
+  }
+
   Future<void> fetchClinics() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('user_token');
 
-      // تأكد أن الرابط هنا صحيح، هل هو clinics أم departments في الباك إند؟
       String url = '$baseUrl/clinics';
       print("🌐 جاري طلب العيادات من: $url");
 
@@ -56,30 +62,21 @@ class _MedicalPageState extends State<MedicalPage> {
         },
       );
 
-      print("📦 كود حالة العيادات: ${response.statusCode}");
-      print("📦 الرد القادم للعيادات: ${response.body}");
-
       if (response.statusCode == 200) {
         var jsonResponse = json.decode(response.body);
         if (!mounted) return;
 
-        // 🛑 التعديل هنا: فحص 'status' بدلاً من 'success'
         if (jsonResponse['status'] == 'success') {
           setState(() {
-            // 🛑 التعديل هنا: قراءة المصفوفة من 'data' بدلاً من 'departments'
             clinics = jsonResponse['data'] ?? [];
           });
-          print("✅ تم تحميل ${clinics.length} عيادات بنجاح");
         }
-      } else {
-        print("❌ فشل تحميل العيادات، كود الخطأ: ${response.statusCode}");
       }
     } catch (e) {
       print("❌ خطأ برمجي أو انقطاع شبكة في جلب العيادات: $e");
     }
   }
 
-  // دالة جلب الأسئلة
   Future<void> fetchQuestions() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -124,18 +121,17 @@ class _MedicalPageState extends State<MedicalPage> {
     }
   }
 
-  // دالة إرسال السؤال
   Future<void> _sendQuestion() async {
     if (_questionController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("الرجاء كتابة السؤال")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("الرجاء كتابة السؤال")),
+      );
       return;
     }
     if (selectedClinicId == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("الرجاء اختيار العيادة")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("الرجاء اختيار العيادة")),
+      );
       return;
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -191,164 +187,54 @@ class _MedicalPageState extends State<MedicalPage> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: 20.w), 
       child: Column(
         children: [
-          const SizedBox(height: 40),
-          const Text(
+          SizedBox(height: 40.h), 
+          Text(
             "Ask Question",
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 24.sp, 
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1E1E66),
+              color: const Color(0xFF1E1E66),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
-          // قائمة الأسئلة
           Expanded(
             child: isLoading
                 ? const Center(
                     child: CircularProgressIndicator(color: Color(0xFF1E1E66)),
                   )
                 : myQuestions.isEmpty
-                ? const Center(
-                    child: Text(
-                      "لا توجد أسئلة سابقة",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  )
-                : RefreshIndicator(
-                  onRefresh: fetchQuestions,
-                    color: const Color(0xFF1E1E66),
-                  child: ListView.builder(
-                      itemCount: myQuestions.length,
-                      itemBuilder: (context, index) {
-                        final item = myQuestions[index];
-                        return Card(
-                          elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.clinicName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1E1E66),
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  "س: ${item.question}",
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const Divider(),
-                                if (item.answer != null &&
-                                    item.answer!.isNotEmpty)
-                                  Text("ج: ${item.answer}",
-                                    style: const TextStyle(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  )
-                                else
-                                  const Text(
-                                    "⏳ بانتظار رد الطبيب...",
-                                    style: TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                ),
+                    ? Center(
+                        child: Text(
+                          "لا توجد أسئلة سابقة",
+                          style: TextStyle(color: Colors.grey, fontSize: 16.sp), 
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: fetchQuestions,
+                        color: const Color(0xFF1E1E66),
+                        child: ListView.builder(
+                          itemCount: myQuestions.length,
+                          itemBuilder: (context, index) {
+                            return QuestionItemCard(item: myQuestions[index]);
+                          },
+                        ),
+                      ),
           ),
 
-          // منطقة إدخال السؤال والعيادة
-          Container(
-            padding: const EdgeInsets.only(top: 15, bottom: 20),
-            child: Column(
-              children: [
-                // Dropdown للعيادات (تم تصحيح جلب العناصر وتفعيلها)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<int>(
-                      hint: Text(
-                        clinics.isEmpty
-                            ? "جارِ التحميل أو لا توجد عيادات..."
-                            : "اختر العيادة",
-                      ),
-                      value: selectedClinicId,
-                      isExpanded: true,
-                      // إذا كانت القائمة فارغة، نضع عنصر وهمي غير قابل للاختيار
-                      items: clinics.isEmpty
-                          ? [
-                              const DropdownMenuItem<int>(
-                                value: null,
-                                child: Text("لا توجد بيانات"),
-                              ),
-                            ]
-                          : clinics.map((clinic) {
-                              return DropdownMenuItem<int>(
-                                value: clinic['id'],
-                                child: Text(clinic['name_ar'] ?? "غير معروف"),
-                              );
-                            }).toList(),
-                      onChanged: clinics.isEmpty
-                          ? null
-                          : (int? newValue) {
-                              setState(() {
-                                selectedClinicId = newValue;
-                              });
-                            },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // حقل السؤال
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: TextField(
-                    controller: _questionController,
-                    decoration: InputDecoration(
-                      hintText: "Question",
-                      border: InputBorder.none,
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.send, color: Color(0xFF1E1E66)),
-                        onPressed: _sendQuestion,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          MedicalInputSection(
+            clinics: clinics,
+            selectedClinicId: selectedClinicId,
+            onClinicChanged: (newValue) {
+              setState(() {
+                selectedClinicId = newValue;
+              });
+            },
+            questionController: _questionController,
+            onSendPressed: _sendQuestion,
           ),
         ],
       ),
