@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:wecare/core/networking/api_constants.dart';
 import 'package:wecare/features/home/presentation/ui/widgets/question_item_card.dart'; // 🔴 استيراد بطاقة السؤال
 import 'package:wecare/features/home/presentation/ui/widgets/medical_input_section.dart'; // 🔴 استيراد قسم الإدخال
 
@@ -30,8 +31,6 @@ class _MedicalPageState extends State<MedicalPage> {
   List clinics = [];
   bool isLoading = true;
 
-  final String baseUrl = "http://10.0.2.2:8000/api";
-
   @override
   void initState() {
     super.initState();
@@ -51,11 +50,11 @@ class _MedicalPageState extends State<MedicalPage> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('user_token');
 
-      String url = '$baseUrl/clinics';
+      final url = ApiConstants.endpoint('clinics');
       print("🌐 جاري طلب العيادات من: $url");
 
       final response = await http.get(
-        Uri.parse(url),
+        url,
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -83,7 +82,7 @@ class _MedicalPageState extends State<MedicalPage> {
       String? token = prefs.getString('user_token');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/patient_questions'),
+        ApiConstants.endpoint('patient_questions'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -139,7 +138,7 @@ class _MedicalPageState extends State<MedicalPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/ask'),
+        ApiConstants.endpoint('ask'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

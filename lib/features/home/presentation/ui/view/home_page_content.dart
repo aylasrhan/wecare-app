@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wecare/core/services/auth_service.dart';
+import 'package:wecare/core/networking/api_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 
 import 'package:wecare/features/home/presentation/ui/widgets/appointment_card.dart';
@@ -20,7 +21,6 @@ class _HomePageContentState extends State<HomePageContent> {
   List famousDoctors = [];
   List clinics = [];
   bool isLoading = true;
-  final String baseUrl = "http://10.0.2.2:8000/api";
   List upcomingAppointments = [];
 
   @override
@@ -54,7 +54,7 @@ class _HomePageContentState extends State<HomePageContent> {
     String? token = await getToken();
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/famous_doctors'),
+        ApiConstants.endpoint('famous_doctors'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -73,7 +73,7 @@ class _HomePageContentState extends State<HomePageContent> {
 
   Future<void> fetchClinics() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/clinics'));
+      final response = await http.get(ApiConstants.endpoint('clinics'));
       if (response.statusCode == 200) {
         var jsonResponse = json.decode(response.body);
         setState(() {

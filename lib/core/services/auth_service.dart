@@ -2,15 +2,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wecare/core/networking/api_constants.dart';
 import 'package:wecare/features/auth/login/data/models/user_model.dart';
 import 'package:wecare/model/doctor_model.dart';
 import 'package:wecare/model/visit_model.dart';
 
+
 class AuthService {
-   final String baseUrl = "http://10.0.2.2:8000/api/";
-  //  final String baseUrl = "http://192.168.1.3:8000/api/";
-
-
 Future<String> bookAppointment({
   required dynamic doctor, 
   required String date,
@@ -32,7 +30,7 @@ Future<String> bookAppointment({
     print("🚨 [FINAL FIX] Booking with true Doctor ID: $doctorId for Date: $date, Time: $time");
 
     final response = await http.post(
-      Uri.parse('${baseUrl}appointment-store'), 
+      ApiConstants.endpoint('appointment-store'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -72,7 +70,13 @@ Future<List<String>> getBookedTimes(int doctorId, String date) async {
     String? token = prefs.getString('token');
 
     final response = await http.get(
-      Uri.parse('${baseUrl}booked-times?doctor_id=$doctorId&date=$date'),
+      ApiConstants.endpoint(
+        'booked-times',
+        queryParameters: {
+          'doctor_id': doctorId.toString(),
+          'date': date,
+        },
+      ),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -96,7 +100,7 @@ Future<List<String>> getBookedTimes(int doctorId, String date) async {
 
 Future<UserModel> login(String email, String password) async {
   final response = await http.post(
-    Uri.parse('${baseUrl}Api_login'),
+    ApiConstants.endpoint(ApiConstants.loginEndpoint),
     body: {'email': email, 'password': password},
   );
   
@@ -143,7 +147,7 @@ Future<UserModel> login(String email, String password) async {
     String? token = prefs.getString('user_token');
 
     final response = await http.get(
-      Uri.parse('${baseUrl}profile'), 
+      ApiConstants.endpoint('profile'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -193,7 +197,7 @@ Future<Map<String, dynamic>> register({
   if (specialization != null) body['specialization'] = specialization;
 
   final response = await http.post(
-    Uri.parse('${baseUrl}register'),
+    ApiConstants.endpoint('register'),
     body: body,
   );
 
@@ -220,9 +224,9 @@ Future<Map<String, dynamic>> register({
 }
 Future<List<String>> getNationalities() async {
   try {
-    print("جاري الاتصال بـ: ${baseUrl}get-nationalities");
+    print("جاري الاتصال بـ: ${ApiConstants.endpoint('get-nationalities')}");
     
-    final response = await http.get(Uri.parse('${baseUrl}get-nationalities'));
+    final response = await http.get(ApiConstants.endpoint('get-nationalities'));
     
     print("الحالة: ${response.statusCode}");
     print("الرد: ${response.body}");
@@ -240,7 +244,7 @@ Future<List<String>> getNationalities() async {
   }
 }
 Future<List<String>> getCities() async {
-  final response = await http.get(Uri.parse('${baseUrl}cities')); 
+  final response = await http.get(ApiConstants.endpoint('cities'));
   
   if (response.statusCode == 200) {
     final Map<String, dynamic> responseData = json.decode(response.body);
@@ -261,7 +265,7 @@ Future<Map<String, dynamic>> verifyCode(String code) async {
   print("إرسال الكود: $code مع التوكين: $token");
 
   final response = await http.post(
-    Uri.parse('${baseUrl}email/verify'), 
+    ApiConstants.endpoint('email/verify'),
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
@@ -282,7 +286,7 @@ Future<void> resendCode() async {
   String? token = prefs.getString('user_token');
 
   final response = await http.post(
-    Uri.parse('${baseUrl}email/resend'), 
+    ApiConstants.endpoint('email/resend'),
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
@@ -299,7 +303,7 @@ Future<List<Doctor>> getDoctors(int subgrp) async {
   String? token = prefs.getString('user_token'); 
 
   final response = await http.post(
-    Uri.parse('${baseUrl}doctors_by_department'), 
+    ApiConstants.endpoint('doctors_by_department'),
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
@@ -326,7 +330,7 @@ Future<List<dynamic>> getPatientAppointments() async {
   String? token = prefs.getString('user_token');
 
   final response = await http.get(
-    Uri.parse('${baseUrl}patient-appointments'), 
+    ApiConstants.endpoint('patient-appointments'),
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
@@ -357,7 +361,7 @@ Future<List<VisitModel>> getVisits() async {
   String? token = prefs.getString('user_token');
 
   final response = await http.get(
-    Uri.parse('${baseUrl}pat_visits'), 
+    ApiConstants.endpoint('pat_visits'),
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
@@ -386,7 +390,7 @@ Future<List<dynamic>> getDoctorTodayAppointments() async {
   }
 
   final response = await http.get(
-    Uri.parse('${baseUrl}doctor-appointments'),
+    ApiConstants.endpoint('doctor-appointments'),
     headers: {
       'Authorization': 'Bearer $token',
       'Accept': 'application/json',
@@ -417,7 +421,7 @@ Future<bool> acceptAppointment(int appointmentId) async {
     String? token = prefs.getString('token') ?? prefs.getString('user_token');
 
     final response = await http.post(
-      Uri.parse('${baseUrl}accept-appointment'),
+      ApiConstants.endpoint('accept-appointment'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -446,7 +450,7 @@ Future<bool> rejectAppointment(int appointmentId) async {
     String? token = prefs.getString('token') ?? prefs.getString('user_token');
 
     final response = await http.post(
-      Uri.parse('${baseUrl}reject-appointment'),
+      ApiConstants.endpoint('reject-appointment'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -488,7 +492,7 @@ Future<bool> rejectAppointment(int appointmentId) async {
       print("جاري إرسال التقييم... الطبيب: $doctorId | التقييم: $rating");
 
       final response = await http.post(
-        Uri.parse('${baseUrl}doctor/rate'), // الرابط سيصبح: http://10.0.2.2:8000/api/doctor/rate
+        ApiConstants.endpoint('doctor/rate'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
