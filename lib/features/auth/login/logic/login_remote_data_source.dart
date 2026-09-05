@@ -5,7 +5,7 @@ import '../../../../core/networking/api_constants.dart';
 class LoginRemoteDataSource {
   Future<String> login(String email, String password) async {
     final response = await http.post(
-      Uri.parse(ApiConstants.baseUrl + ApiConstants.loginEndpoint),
+      ApiConstants.endpoint(ApiConstants.loginEndpoint),
       body: {
         'email': email,
         'password': password,

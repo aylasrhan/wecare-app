@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wecare/core/networking/api_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 import 'package:wecare/features/home/presentation/ui/widgets/clinic_doctor_card.dart';    
 
@@ -35,7 +36,7 @@ class _DetailsEyeScreenState extends State<DetailsEyeScreen> {
     String? token = await getToken();
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/doctors_by_department'),
+        ApiConstants.endpoint('doctors_by_department'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
