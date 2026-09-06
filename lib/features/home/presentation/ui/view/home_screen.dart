@@ -20,7 +20,6 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
   
   @override
   Widget build(BuildContext context) {
-    // 🔴 التعديل الأول: نقلنا قائمة الصفحات إلى هنا لكي تتحدث وتجلب البيانات عند كل ضغطة
     final List<Widget> pages = [
       HomePageContent(), 
       VisitsPage(),
@@ -60,7 +59,6 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
       child: Scaffold(
         backgroundColor: Colors.white,
         
-        // 🔴 التعديل الثاني: أزلنا IndexedStack تماماً وعرضنا الصفحة مباشرة
         body: pages[_currentIndex],
 
         bottomNavigationBar: BottomNavigationBar(
