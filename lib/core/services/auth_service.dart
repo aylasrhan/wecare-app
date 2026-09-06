@@ -7,8 +7,8 @@ import 'package:wecare/model/doctor_model.dart';
 import 'package:wecare/model/visit_model.dart';
 
 class AuthService {
-   final String baseUrl = "http://10.0.2.2:8000/api/";
-  //  final String baseUrl = "http://192.168.1.3:8000/api/";
+    final String baseUrl = "http://10.0.2.2:8000/api/";
+    // final String baseUrl = "http://192.168.1.3:8000/api/";
 
 
 Future<String> bookAppointment({
