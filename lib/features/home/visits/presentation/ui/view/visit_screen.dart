@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart'; 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wecare/core/networking/api_constants.dart';
 import 'package:wecare/features/home/visits/presentation/ui/widgets/visit_card.dart'; // 🔴 استيراد الودجت الجديد
 
 class VisitsPage extends StatefulWidget {
@@ -27,7 +28,7 @@ class _VisitsPageState extends State<VisitsPage> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/visits'),
+        ApiConstants.endpoint('visits'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

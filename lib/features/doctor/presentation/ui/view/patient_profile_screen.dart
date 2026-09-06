@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart'; 
+import 'package:wecare/core/networking/api_constants.dart';
 import 'package:wecare/features/doctor/presentation/ui/view/add_diagnosis_screen.dart';
 import 'package:wecare/features/doctor/presentation/ui/widgets/patient_header_card.dart';
 import 'package:wecare/features/doctor/presentation/ui/widgets/patient_info_tile.dart'; 
@@ -43,8 +44,9 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
       String? token = prefs.getString('token');
 
       final response = await http.get(
-        Uri.parse(
-          'http://10.0.2.2:8000/api/patient/profile?patient_id=${widget.patientId}',
+        ApiConstants.endpoint(
+          'patient/profile',
+          queryParameters: {'patient_id': widget.patientId.toString()},
         ),
         headers: {
           'Accept': 'application/json',

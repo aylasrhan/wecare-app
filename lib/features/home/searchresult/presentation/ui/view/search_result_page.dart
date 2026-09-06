@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:wecare/core/networking/api_constants.dart';
 import 'package:wecare/features/home/searchresult/presentation/ui/widgets/doctor_result_card.dart'; // 🔴 استيراد البطاقة المنفصلة
 
 class SearchResultPage extends StatefulWidget {
@@ -14,8 +15,6 @@ class SearchResultPage extends StatefulWidget {
 }
 
 class _SearchResultPageState extends State<SearchResultPage> {
-  final String baseUrl = "http://10.0.2.2:8000/api/";
-
   List<dynamic> filteredDoctors = [];
   bool isLoading = false;
   final TextEditingController searchController = TextEditingController();
@@ -40,7 +39,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
     });
 
     try {
-      final url = Uri.parse("${baseUrl}search"); 
+      final url = ApiConstants.endpoint('search');
 
       final prefs = await SharedPreferences.getInstance();
       String token = prefs.getString('user_token') ?? ''; 
