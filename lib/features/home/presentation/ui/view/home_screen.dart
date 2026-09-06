@@ -18,21 +18,16 @@ class HomeScreenPage extends StatefulWidget {
 class _HomeScreenPageState extends State<HomeScreenPage> {
   int _currentIndex = 0;
   
-  late final List<Widget> _pages;
-
   @override
-  void initState() {
-    super.initState();
-    _pages = [
+  Widget build(BuildContext context) {
+    // 🔴 التعديل الأول: نقلنا قائمة الصفحات إلى هنا لكي تتحدث وتجلب البيانات عند كل ضغطة
+    final List<Widget> pages = [
       HomePageContent(), 
       VisitsPage(),
       MedicalPage(),
       MorePage(),
     ];
-  }
 
-  @override
-  Widget build(BuildContext context) {
     return PopScope(
       canPop: false, 
       onPopInvoked: (didPop) async {
@@ -64,10 +59,10 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _pages,
-        ),
+        
+        // 🔴 التعديل الثاني: أزلنا IndexedStack تماماً وعرضنا الصفحة مباشرة
+        body: pages[_currentIndex],
+
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           selectedItemColor: const Color(0xFF1E1E66),

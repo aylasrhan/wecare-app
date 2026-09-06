@@ -26,9 +26,17 @@ class _HomePageContentState extends State<HomePageContent> {
   @override
   void initState() {
     super.initState();
-    fetchClinics();
-    fetchFamousDoctors();
-    fetchAppointments();
+    _fetchAllData(); 
+  }
+
+  Future<void> _fetchAllData() async {
+    setState(() => isLoading = true);
+    await Future.wait([
+      fetchClinics(),
+      fetchFamousDoctors(),
+      fetchAppointments(),
+    ]);
+    setState(() => isLoading = false);
   }
 
   Future<void> fetchAppointments() async {
@@ -78,65 +86,69 @@ class _HomePageContentState extends State<HomePageContent> {
         var jsonResponse = json.decode(response.body);
         setState(() {
           clinics = jsonResponse['data'] ?? [];
-          isLoading = false;
         });
       }
     } catch (e) {
-      setState(() => isLoading = false);
+      print("Error fetching clinics: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 20.h),
-            
-            const HomeHeader(),
-            
-            SizedBox(height: 25.h),
-            SizedBox(
-              height: 120.h, 
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
+      child: RefreshIndicator(
+        color: const Color(0xFF1E1E66),
+        onRefresh: _fetchAllData, 
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(), 
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20.h),
+              
+              const HomeHeader(),
+              
+              SizedBox(height: 25.h),
+              SizedBox(
+                height: 120.h, 
+                child: isLoading && clinics.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: clinics.length,
+                        itemBuilder: (context, index) => ClinicTile(clinic: clinics[index]),
+                      ),
+              ),
+              SizedBox(height: 25.h),
+              Text(
+                "Popular Doctor",
+                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 15.h),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: famousDoctors.length,
+                itemBuilder: (context, index) => DoctorCard(doctor: famousDoctors[index]),
+              ),
+              SizedBox(height: 25.h),
+              Text(
+                "Upcoming Appointment",
+                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 15.h),
+              upcomingAppointments.isEmpty 
+                  ? Text("لا توجد مواعيد قادمة", style: TextStyle(fontSize: 16.sp)) 
                   : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: clinics.length,
-                      itemBuilder: (context, index) => ClinicTile(clinic: clinics[index]),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: upcomingAppointments.length,
+                      itemBuilder: (context, index) => AppointmentCard(appointment: upcomingAppointments[index]),
                     ),
-            ),
-            SizedBox(height: 25.h),
-            Text(
-              "Popular Doctor",
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 15.h),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: famousDoctors.length,
-              itemBuilder: (context, index) => DoctorCard(doctor: famousDoctors[index]),
-            ),
-            SizedBox(height: 25.h),
-            Text(
-              "Upcoming Appointment",
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 15.h),
-            upcomingAppointments.isEmpty 
-                ? Text("لا توجد مواعيد قادمة", style: TextStyle(fontSize: 16.sp)) // 🔴 أضفنا حجم خط متجاوب للرسالة
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: upcomingAppointments.length,
-                    itemBuilder: (context, index) => AppointmentCard(appointment: upcomingAppointments[index]),
-                  ),
-            SizedBox(height: 20.h),
-          ],
+              SizedBox(height: 20.h),
+            ],
+          ),
         ),
       ),
     );
