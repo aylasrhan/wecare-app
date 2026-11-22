@@ -11,7 +11,7 @@
 - **Role-Based Authentication & Profiles:** Secure onboarding, registration, and profile management tailored for both patients and doctors.
 - **Appointment Scheduling:** End-to-end appointment booking, clinical visit management, and status tracking.
 - **Real-Time Audio & Video Consultations:** Integrated **ZEGOCLOUD SDK** for low-latency in-app audio/video calls with native incoming call notifications.
-- **Medical Diagnosis & Records:** Structured access to clinical visit history and diagnostic reports.
+- **Medical Diagnosis & Records:** Structured access to clinical visit history, prescriptions, vital signs, and diagnostic reports.
 - **Adaptive & Localized UI:** Responsive layouts for phones and tablets (`flutter_screenutil`) supporting seamless **Arabic (RTL)** and **English (LTR)** localization.
 
 ---
@@ -28,11 +28,9 @@
 
 ## Screenshots
 
-| Onboarding & Auth | Appointment Booking | Video Consultation |
+| Home & Specialists | Appointment Booking | Medical Diagnosis & Records |
 | :---: | :---: | :---: |
-| <img src="screenshots/auth.png" width="250"/> | <img src="screenshots/booking.png" width="250"/> | <img src="screenshots/call.png" width="250"/> |
-
-*(Note: Drag and drop your app screenshots directly into this README editor on GitHub to display them automatically).*
+| <img src="https://github.com/user-attachments/assets/6ed66a50-b11c-4254-b9cf-e5b4fd61b1af" width="240"/> | <img src="https://github.com/user-attachments/assets/1c303a08-c1f4-4c42-9493-6cf934888686" width="240"/> | <img src="https://github.com/user-attachments/assets/bf20f8cf-a760-45a9-ae66-8a0b59bd06bb" width="240"/> |
 
 ---
 
