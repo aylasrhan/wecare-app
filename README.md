@@ -30,7 +30,7 @@
 
 | Home & Specialists | Appointment Booking | Medical Diagnosis & Records |
 | :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/6ed66a50-b11c-4254-b9cf-e5b4fd61b1af" width="240"/> | <img src="https://github.com/user-attachments/assets/1c303a08-c1f4-4c42-9493-6cf934888686" width="240"/> | <img src="https://github.com/user-attachments/assets/bf20f8cf-a760-45a9-ae66-8a0b59bd06bb" width="240"/> |
+| ![Home](https://github.com/user-attachments/assets/6ed66a50-b11c-4254-b9cf-e5b4fd61b1af) | ![Booking](https://github.com/user-attachments/assets/1c303a08-c1f4-4c42-9493-6cf934888686) | ![Records](https://github.com/user-attachments/assets/bf20f8cf-a760-45a9-ae66-8a0b59bd06bb) |
 
 ---
 
