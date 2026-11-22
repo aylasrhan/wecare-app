@@ -38,4 +38,4 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/aylasrhan/wecare-app.git](https://github.com/aylasrhan/wecare-app.git)
+git clone https://github.com/aylasrhan/wecare-app.git
